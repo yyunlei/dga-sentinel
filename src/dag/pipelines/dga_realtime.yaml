@@ -61,6 +61,9 @@ nodes:
         - type: es
           index: dga-events-{date}
           condition: always
+        - type: starrocks
+          table: dga_events
+          condition: always
 
 checkpoint:
   backend: redis
