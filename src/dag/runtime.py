@@ -156,7 +156,7 @@ if __name__ == "__main__":
     setup_logging()
 
     pipeline_file = os.environ.get(
-        "DAG_PIPELINE", "dag_engine/pipelines/dga_realtime.yaml"
+        "DAG_PIPELINE", "src/dag/pipelines/dga_realtime.yaml"
     )
     kafka_bootstrap = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
     es_hosts = os.environ.get("ES_HOSTS", "http://elasticsearch:9200")

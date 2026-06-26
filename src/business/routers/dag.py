@@ -320,7 +320,7 @@ async def get_pipeline(pipeline_id: str, pg: asyncpg.Pool | None = Depends(get_p
         pass
 
     # Fallback: read local YAML
-    yaml_path = Path("dag_engine") / "pipelines" / f"{pipeline_id}.yaml"
+    yaml_path = Path("src/dag") / "pipelines" / f"{pipeline_id}.yaml"
     if not yaml_path.exists():
         raise HTTPException(status_code=404, detail="Pipeline not found")
     content = yaml_path.read_text()

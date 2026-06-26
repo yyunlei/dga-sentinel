@@ -106,7 +106,7 @@ class TestKafkaConsumerBroadcast:
     async def test_kafka_consumer_handles_missing_aiokafka(self):
         """aiokafka 未安装时应优雅降级"""
         with patch.dict("sys.modules", {"aiokafka": None}):
-            with patch("gateway.routers.realtime.logger") as mock_logger:
+            with patch("business.routers.realtime.logger") as mock_logger:
                 # Import error should be caught
                 try:
                     await _kafka_consumer_loop()

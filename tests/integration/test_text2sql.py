@@ -146,7 +146,7 @@ class TestIntentRouter:
 
 class TestQueryEndpoint:
 
-    @patch("agent_layer.text2sql.engine.Text2SQLEngine")
+    @patch("ai.agents.text2sql.engine.Text2SQLEngine")
     def test_query_endpoint_returns_structure(
         self, mock_engine_cls, app, auth_headers,
     ):

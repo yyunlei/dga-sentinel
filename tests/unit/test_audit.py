@@ -19,7 +19,7 @@ class TestAuditMiddleware:
         app = MagicMock()
         middleware = AuditMiddleware(app)
 
-        with patch("gateway.middleware.audit.logger") as mock_logger, \
+        with patch("business.middleware.audit.logger") as mock_logger, \
              patch.dict("sys.modules", {"asyncpg": MagicMock(
                  connect=AsyncMock(side_effect=Exception("pg unavailable"))
              )}):

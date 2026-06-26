@@ -240,7 +240,7 @@ class TestPipelineCRUD:
         """POST /api/dag/pipelines 创建新 pipeline"""
         mock_pg = AsyncMock()
         mock_pg.execute = AsyncMock()
-        pipeline_app.dependency_overrides[__import__("gateway.db", fromlist=["get_pg_pool"]).get_pg_pool] = lambda: mock_pg
+        pipeline_app.dependency_overrides[__import__("business.db", fromlist=["get_pg_pool"]).get_pg_pool] = lambda: mock_pg
 
         client = TestClient(pipeline_app)
         resp = client.post(

@@ -175,7 +175,7 @@ def _make_httpx_response(data: dict, status_code: int = 200) -> Response:
 class TestListAlertsGrouped:
     """Integration tests for the domain-aggregated alert list endpoint."""
 
-    @patch("gateway.routers.alerts.get_es_client")
+    @patch("business.routers.alerts.get_es_client")
     @patch("httpx.AsyncClient")
     def test_default_params_returns_groups(self, mock_httpx_cls, mock_es, client):
         mock_es.return_value = _mock_es_client()
@@ -201,7 +201,7 @@ class TestListAlertsGrouped:
         assert g0["unique_src_ip_count"] == 2
         assert "10.0.0.1" in g0["unique_src_ips"]
 
-    @patch("gateway.routers.alerts.get_es_client")
+    @patch("business.routers.alerts.get_es_client")
     @patch("httpx.AsyncClient")
     def test_empty_result(self, mock_httpx_cls, mock_es, client):
         mock_es.return_value = _mock_es_client()
@@ -217,7 +217,7 @@ class TestListAlertsGrouped:
         assert data["total_domains"] == 0
         assert data["groups"] == []
 
-    @patch("gateway.routers.alerts.get_es_client")
+    @patch("business.routers.alerts.get_es_client")
     @patch("httpx.AsyncClient")
     def test_size_param_passed_to_es(self, mock_httpx_cls, mock_es, client):
         mock_es.return_value = _mock_es_client()
@@ -238,7 +238,7 @@ class TestListAlertsGrouped:
         resp = client.get("/api/alerts/grouped?size=300")
         assert resp.status_code == 422  # Validation error
 
-    @patch("gateway.routers.alerts.get_es_client")
+    @patch("business.routers.alerts.get_es_client")
     @patch("httpx.AsyncClient")
     def test_all_acknowledged_true_when_zero_unack(self, mock_httpx_cls, mock_es, client):
         mock_es.return_value = _mock_es_client()
@@ -255,7 +255,7 @@ class TestListAlertsGrouped:
         # First group has unacknowledged_count=5
         assert data["groups"][0]["all_acknowledged"] is False
 
-    @patch("gateway.routers.alerts.get_es_client")
+    @patch("business.routers.alerts.get_es_client")
     def test_es_unavailable_returns_503(self, mock_es, client):
         mock_es.return_value = None
         resp = client.get("/api/alerts/grouped")
@@ -269,7 +269,7 @@ class TestListAlertsGrouped:
 class TestExpandDrillDown:
     """Integration tests for expanding a domain group to see child alerts."""
 
-    @patch("gateway.routers.alerts.get_es_client")
+    @patch("business.routers.alerts.get_es_client")
     @patch("httpx.AsyncClient")
     def test_list_alerts_filtered_by_domain(self, mock_httpx_cls, mock_es, client):
         mock_es.return_value = _mock_es_client()
@@ -294,7 +294,7 @@ class TestExpandDrillDown:
         assert "src_ip" in alert
         assert "acknowledged" in alert
 
-    @patch("gateway.routers.alerts.get_es_client")
+    @patch("business.routers.alerts.get_es_client")
     @patch("httpx.AsyncClient")
     def test_domain_filter_passed_to_es_query(self, mock_httpx_cls, mock_es, client):
         mock_es.return_value = _mock_es_client()
@@ -319,7 +319,7 @@ class TestExpandDrillDown:
 class TestAcknowledgeByDomain:
     """Integration tests for batch acknowledge by domain endpoint."""
 
-    @patch("gateway.routers.alerts.get_es_client")
+    @patch("business.routers.alerts.get_es_client")
     @patch("httpx.AsyncClient")
     def test_single_domain_ack(self, mock_httpx_cls, mock_es, client):
         mock_es.return_value = _mock_es_client()
@@ -336,7 +336,7 @@ class TestAcknowledgeByDomain:
         assert resp.status_code == 200
         assert resp.json()["updated"] == 5
 
-    @patch("gateway.routers.alerts.get_es_client")
+    @patch("business.routers.alerts.get_es_client")
     @patch("httpx.AsyncClient")
     def test_multi_domain_ack(self, mock_httpx_cls, mock_es, client):
         mock_es.return_value = _mock_es_client()
@@ -353,7 +353,7 @@ class TestAcknowledgeByDomain:
         assert resp.status_code == 200
         assert resp.json()["updated"] == 12
 
-    @patch("gateway.routers.alerts.get_es_client")
+    @patch("business.routers.alerts.get_es_client")
     @patch("httpx.AsyncClient")
     def test_idempotent_re_ack(self, mock_httpx_cls, mock_es, client):
         mock_es.return_value = _mock_es_client()
@@ -370,7 +370,7 @@ class TestAcknowledgeByDomain:
         assert resp.status_code == 200
         assert resp.json()["updated"] == 0
 
-    @patch("gateway.routers.alerts.get_es_client")
+    @patch("business.routers.alerts.get_es_client")
     def test_empty_domains_returns_400(self, mock_es, client):
         mock_es.return_value = _mock_es_client()
         resp = client.post(
@@ -379,7 +379,7 @@ class TestAcknowledgeByDomain:
         )
         assert resp.status_code == 400
 
-    @patch("gateway.routers.alerts.get_es_client")
+    @patch("business.routers.alerts.get_es_client")
     def test_es_unavailable_returns_503(self, mock_es, client):
         mock_es.return_value = None
         resp = client.post(
@@ -388,7 +388,7 @@ class TestAcknowledgeByDomain:
         )
         assert resp.status_code == 503
 
-    @patch("gateway.routers.alerts.get_es_client")
+    @patch("business.routers.alerts.get_es_client")
     @patch("httpx.AsyncClient")
     def test_update_by_query_uses_correct_filter(self, mock_httpx_cls, mock_es, client):
         mock_es.return_value = _mock_es_client()

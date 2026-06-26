@@ -36,7 +36,7 @@ def _patch_lifespan():
         app.state.redis_client = None
         yield
 
-    with patch("gateway.main.lifespan", _noop_lifespan):
+    with patch("business.main.lifespan", _noop_lifespan):
         import importlib, business.main  # noqa: E401
         importlib.reload(business.main)
         yield business.main.app
@@ -125,14 +125,14 @@ class TestJWTAuth:
 
     def test_no_token_returns_401(self, client):
         """Request without JWT should return 401 when not in dev mode."""
-        with patch("gateway.middleware.auth.get_settings") as mock_s:
+        with patch("business.middleware.auth.get_settings") as mock_s:
             mock_s.return_value = MagicMock(is_dev=False, jwt_secret="s", jwt_algorithm="HS256")
             resp = client.post("/api/score", json={"domains": ["test.com"]})
             assert resp.status_code in (401, 403)
 
     def test_invalid_token_returns_401(self, client):
         """Request with invalid JWT should return 401."""
-        with patch("gateway.middleware.auth.get_settings") as mock_s:
+        with patch("business.middleware.auth.get_settings") as mock_s:
             mock_s.return_value = MagicMock(
                 is_dev=False, jwt_secret="real-secret", jwt_algorithm="HS256"
             )
@@ -144,9 +144,9 @@ class TestJWTAuth:
 class TestRBAC:
     """Role-based access control."""
 
-    @patch("gateway.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
-    @patch("gateway.routers.score.get_redis_client", return_value=None)
-    @patch("gateway.routers.score.get_es_client", return_value=None)
+    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
+    @patch("business.routers.score.get_redis_client", return_value=None)
+    @patch("business.routers.score.get_es_client", return_value=None)
     @patch("httpx.AsyncClient.post")
     def test_admin_can_post_score(self, mock_post, _es, _redis, _sr, client):
         """Admin role should be able to POST /api/score."""

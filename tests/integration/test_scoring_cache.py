@@ -123,7 +123,7 @@ class TestCacheKeyFormat:
 class TestScoringCacheIntegration:
     """End-to-end: score → cache write → cache hit on repeat."""
 
-    @patch("gateway.routers.score.write_events_to_starrocks", new_callable=AsyncMock)
+    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock)
     @patch("httpx.AsyncClient.post")
     def test_first_request_calls_scoring_service(
         self, mock_http_post, mock_sr,
@@ -147,7 +147,7 @@ class TestScoringCacheIntegration:
         assert data["results"][0]["domain"] == "evil.com"
         mock_http_post.assert_called_once()
 
-    @patch("gateway.routers.score.write_events_to_starrocks", new_callable=AsyncMock)
+    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock)
     @patch("httpx.AsyncClient.post")
     def test_cached_result_skips_scoring_service(
         self, mock_http_post, mock_sr,
@@ -185,7 +185,7 @@ class TestScoringCacheIntegration:
 class TestCacheWriteOnScore:
     """Verify that scoring writes to Redis with correct key and TTL."""
 
-    @patch("gateway.routers.score.write_events_to_starrocks", new_callable=AsyncMock)
+    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock)
     @patch("httpx.AsyncClient.post")
     def test_score_writes_cache_entry(
         self, mock_http_post, mock_sr,

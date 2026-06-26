@@ -39,7 +39,7 @@ class TestScoringAPI:
         from ai.scoring.main import app
         from fastapi.testclient import TestClient
 
-        with patch("scoring_service.main._scorer", MagicMock()):
+        with patch("ai.scoring.main._scorer", MagicMock()):
             client = TestClient(app)
             resp = client.get("/healthz")
             assert resp.status_code == 200
@@ -50,7 +50,7 @@ class TestScoringAPI:
         from ai.scoring.main import app
         from fastapi.testclient import TestClient
 
-        with patch("scoring_service.main._scorer", None):
+        with patch("ai.scoring.main._scorer", None):
             client = TestClient(app)
             resp = client.get("/readyz")
             assert resp.status_code == 503
@@ -60,7 +60,7 @@ class TestScoringAPI:
         from ai.scoring.main import app
         from fastapi.testclient import TestClient
 
-        with patch("scoring_service.main._scorer", MagicMock()):
+        with patch("ai.scoring.main._scorer", MagicMock()):
             client = TestClient(app)
             resp = client.get("/metrics")
             assert resp.status_code == 200

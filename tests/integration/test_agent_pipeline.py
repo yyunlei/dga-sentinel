@@ -66,7 +66,7 @@ def mock_threat_intel_tool():
 
 class TestTriageAgent:
 
-    @patch("agent_layer.agents.triage_agent.ESQueryTool")
+    @patch("ai.agents.agents.triage_agent.ESQueryTool")
     def test_triage_instantiation(self, mock_es_cls, mock_bus, mock_es_tool):
         mock_es_cls.return_value = mock_es_tool
         from ai.agents.agents.triage_agent import TriageAgent
@@ -74,7 +74,7 @@ class TestTriageAgent:
         assert agent.name == "triage"
         assert agent.bus is mock_bus
 
-    @patch("agent_layer.agents.triage_agent.ESQueryTool")
+    @patch("ai.agents.agents.triage_agent.ESQueryTool")
     async def test_triage_perceive_extracts_context(self, mock_es_cls, mock_bus, mock_es_tool):
         mock_es_cls.return_value = mock_es_tool
         from ai.agents.agents.triage_agent import TriageAgent
@@ -84,7 +84,7 @@ class TestTriageAgent:
         assert result["context"]["domain"] == "xk3jf9a2.evil.com"
         assert result["context"]["score"] == 0.96
 
-    @patch("agent_layer.agents.triage_agent.ESQueryTool")
+    @patch("ai.agents.agents.triage_agent.ESQueryTool")
     async def test_triage_reflect_critical_severity(self, mock_es_cls, mock_bus, mock_es_tool):
         mock_es_cls.return_value = mock_es_tool
         from ai.agents.agents.triage_agent import TriageAgent
@@ -102,7 +102,7 @@ class TestTriageAgent:
 
 class TestExplainAgent:
 
-    @patch("agent_layer.agents.explain_agent.get_settings")
+    @patch("ai.agents.agents.explain_agent.get_settings")
     async def test_explain_perceive(self, mock_settings, mock_bus):
         mock_settings.return_value = MagicMock(deepseek_api_key="")
         from ai.agents.agents.explain_agent import ExplainAgent
@@ -112,7 +112,7 @@ class TestExplainAgent:
         assert result["context"]["domain"] == "xk3jf9a2.evil.com"
         assert result["context"]["family"] == "conficker"
 
-    @patch("agent_layer.agents.explain_agent.get_settings")
+    @patch("ai.agents.agents.explain_agent.get_settings")
     async def test_explain_plan_has_four_dimensions(self, mock_settings, mock_bus):
         mock_settings.return_value = MagicMock(deepseek_api_key="")
         from ai.agents.agents.explain_agent import ExplainAgent
@@ -126,7 +126,7 @@ class TestExplainAgent:
 
 class TestThreatIntelAgent:
 
-    @patch("agent_layer.agents.threat_intel_agent.ThreatIntelTool")
+    @patch("ai.agents.agents.threat_intel_agent.ThreatIntelTool")
     def test_threat_intel_instantiation(self, mock_tool_cls, mock_bus, mock_threat_intel_tool):
         mock_tool_cls.return_value = mock_threat_intel_tool
         from ai.agents.agents.threat_intel_agent import ThreatIntelAgent
@@ -176,7 +176,7 @@ class TestResponseAgent:
 class TestFullPipeline:
     """Triage → (ExplainAgent + ThreatIntelAgent) → ResponseAgent"""
 
-    @patch("agent_layer.agents.triage_agent.ESQueryTool")
+    @patch("ai.agents.agents.triage_agent.ESQueryTool")
     async def test_triage_sends_a2a_on_critical(self, mock_es_cls, mock_bus, mock_es_tool):
         """TriageAgent should send A2A messages to threat_intel and explain for CRITICAL alerts."""
         mock_es_cls.return_value = mock_es_tool

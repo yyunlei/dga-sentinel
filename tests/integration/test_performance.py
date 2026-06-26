@@ -32,7 +32,7 @@ def _patch_lifespan():
         app.state.redis_client = None
         yield
 
-    with patch("gateway.main.lifespan", _noop_lifespan):
+    with patch("business.main.lifespan", _noop_lifespan):
         import importlib, business.main  # noqa: E401
         importlib.reload(business.main)
         yield business.main.app
@@ -62,9 +62,9 @@ def _make_score_mock(domains: list[str]) -> MagicMock:
 class TestPerformance:
     """Mock-based performance validation."""
 
-    @patch("gateway.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
-    @patch("gateway.routers.score.get_redis_client", return_value=None)
-    @patch("gateway.routers.score.get_es_client", return_value=None)
+    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
+    @patch("business.routers.score.get_redis_client", return_value=None)
+    @patch("business.routers.score.get_es_client", return_value=None)
     @patch("httpx.AsyncClient.post")
     def test_single_domain_scoring_responds(self, mock_post, _es, _redis, _sr, client):
         """Single domain scoring endpoint should return 200."""
@@ -73,9 +73,9 @@ class TestPerformance:
         assert resp.status_code == 200
         assert resp.json()["results"] is not None
 
-    @patch("gateway.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
-    @patch("gateway.routers.score.get_redis_client", return_value=None)
-    @patch("gateway.routers.score.get_es_client", return_value=None)
+    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
+    @patch("business.routers.score.get_redis_client", return_value=None)
+    @patch("business.routers.score.get_es_client", return_value=None)
     @patch("httpx.AsyncClient.post")
     def test_batch_1000_domains_accepted(self, mock_post, _es, _redis, _sr, client):
         """Batch of 1000 domains should be accepted (max allowed)."""
@@ -84,7 +84,7 @@ class TestPerformance:
         resp = client.post("/api/score", json={"domains": domains}, headers=_AUTH_HEADER)
         assert resp.status_code == 200
 
-    @patch("gateway.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
+    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
     @patch("httpx.AsyncClient.post")
     def test_redis_cache_avoids_scoring_call(self, mock_post, _sr, _patch_lifespan):
         """When all domains are cached in Redis, scoring service should not be called."""
@@ -115,9 +115,9 @@ class TestPerformance:
         resp = client.post("/api/score", json={"domains": domains}, headers=_AUTH_HEADER)
         assert resp.status_code in (400, 422)
 
-    @patch("gateway.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
-    @patch("gateway.routers.score.get_redis_client", return_value=None)
-    @patch("gateway.routers.score.get_es_client", return_value=None)
+    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
+    @patch("business.routers.score.get_redis_client", return_value=None)
+    @patch("business.routers.score.get_es_client", return_value=None)
     @patch("httpx.AsyncClient.post")
     def test_response_includes_latency(self, mock_post, _es, _redis, _sr, client):
         """Response should include latency_ms field."""

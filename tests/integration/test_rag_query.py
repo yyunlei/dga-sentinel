@@ -81,7 +81,7 @@ class TestDocumentIngest:
 
 class TestThreatKnowledgeRAG:
 
-    @patch("agent_layer.rag.engine.get_settings")
+    @patch("ai.agents.rag.engine.get_settings")
     def test_rag_initialization(self, mock_settings):
         mock_settings.return_value = MagicMock(
             es_hosts="http://localhost:9200",
@@ -92,9 +92,9 @@ class TestThreatKnowledgeRAG:
         assert rag._es is None  # lazy init
         assert rag._embedder is not None
 
-    @patch("agent_layer.rag.engine.get_settings")
-    @patch("agent_layer.rag.engine.AsyncElasticsearch")
-    @patch("agent_layer.rag.embedding.ThreatEmbedding.aembed")
+    @patch("ai.agents.rag.engine.get_settings")
+    @patch("ai.agents.rag.engine.AsyncElasticsearch")
+    @patch("ai.agents.rag.embedding.ThreatEmbedding.aembed")
     async def test_query_returns_answer_sources_structure(
         self, mock_aembed, mock_es_cls, mock_settings,
     ):
@@ -136,7 +136,7 @@ class TestThreatKnowledgeRAG:
         assert "content" in result["sources"][0]
         assert "source" in result["sources"][0]
 
-    @patch("agent_layer.rag.engine.get_settings")
+    @patch("ai.agents.rag.engine.get_settings")
     async def test_query_error_returns_empty(self, mock_settings):
         """When ES is unreachable, query should return empty answer gracefully."""
         mock_settings.return_value = MagicMock(

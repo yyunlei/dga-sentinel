@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     model_multi_path: str = "artifacts/multi/multiclass_classification_model.h5"
 
     # --- DAG 引擎 ---
-    dag_pipeline_dir: str = "dag_engine/pipelines"
+    dag_pipeline_dir: str = "src/dag/pipelines"
 
     # --- Kafka ---
     kafka_bootstrap_servers: str = "localhost:9092"

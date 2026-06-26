@@ -8,7 +8,7 @@ DGA DNS 查询日志流量模拟器
   python scripts/simulate_traffic.py                        # 默认参数，无限运行
   python scripts/simulate_traffic.py --duration 60          # 运行 60 秒
   python scripts/simulate_traffic.py --batch-size 20 --interval 1 --dga-ratio 0.5
-  python scripts/simulate_traffic.py --business http://localhost:8000  # 同时调用 Gateway 评分
+  python scripts/simulate_traffic.py --gateway http://localhost:8000  # 同时调用 Gateway 评分
 """
 from __future__ import annotations
 
@@ -190,7 +190,7 @@ def _handle_signal(sig: int, _frame: Any) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Optional business scoring
+# Optional gateway scoring
 # ---------------------------------------------------------------------------
 
 async def _score_via_gateway(gateway_url: str, domains: list[str]) -> None:
@@ -306,7 +306,7 @@ def parse_args() -> TrafficConfig:
     p.add_argument("--duration", type=int, default=0, help="运行时长秒数, 0=无限 (default: 0)")
     p.add_argument("--burst-prob", type=float, default=0.1, help="Burst 概率 (default: 0.1)")
     p.add_argument("--burst-mult", type=int, default=5, help="Burst 倍数 (default: 5)")
-    p.add_argument("--business", default="", help="可选 Gateway URL, 同时评分 (e.g. http://localhost:8000)")
+    p.add_argument("--gateway", default="", help="可选 Gateway URL, 同时评分 (e.g. http://localhost:8000)")
     args = p.parse_args()
     return TrafficConfig(
         batch_size=args.batch_size,
