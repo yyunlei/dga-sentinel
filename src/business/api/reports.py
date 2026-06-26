@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
+from business.infra.connections import get_es_http
 from business.middleware.rbac import require_viewer
 from common.config import get_settings
 from common.observability import get_logger
@@ -20,6 +21,7 @@ async def report_stats(
     days: int = Query(30, le=90),
     start_date: str | None = None,
     end_date: str | None = None,
+    http=Depends(get_es_http),
 ):
     """报表统计：趋势、Top 域名/主机、热力图"""
     from business.repositories.es_repo import ReportRepo
@@ -27,7 +29,7 @@ async def report_stats(
 
     settings = get_settings()
     es_base = settings.es_hosts.split(",")[0].strip()
-    repo = ReportRepo(es_base=es_base)
+    repo = ReportRepo(http=http, es_base=es_base)
     svc = ReportService(repo=repo)
 
     try:

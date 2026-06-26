@@ -1,6 +1,9 @@
 """
 告警/事件 ES 数据访问。
 封装索引命名、ES8 兼容头、查询构造。业务规则不在此处。
+
+所有 repo 方法通过注入的共享 httpx.AsyncClient 执行 ES 请求，
+不再每次调用时新建连接，消除连接抖动。
 """
 from __future__ import annotations
 
@@ -80,12 +83,14 @@ def _build_filter_query(
 class AlertRepo:
     """告警/事件 ES 仓储：只做 ES 交互，不含业务规则。"""
 
-    def __init__(self, es, es_base: str) -> None:
+    def __init__(self, es, http: httpx.AsyncClient, es_base: str) -> None:
         """
-        :param es: AsyncElasticsearch 实例（用于存活判断，由调用方检查是否 None）
+        :param es:      AsyncElasticsearch 实例（用于存活判断，由调用方检查是否 None）
+        :param http:    共享 httpx.AsyncClient（应用级连接池，由 infra/connections 注入）
         :param es_base: ES HTTP 基础地址，如 http://localhost:9200
         """
         self._es = es
+        self._http = http
         self._es_base = es_base
 
     # ------------------------------------------------------------------
@@ -124,19 +129,18 @@ class AlertRepo:
             end_time=end_time,
         )
         url = f"{self._es_base}/{events_index_wildcard()}/_search"
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            r = await client.post(
-                url,
-                json={
-                    "query": query,
-                    "sort": [{"timestamp": "desc"}],
-                    "from": offset,
-                    "size": limit,
-                },
-                headers=ES8_HEADERS,
-            )
-            r.raise_for_status()
-            return r.json()
+        r = await self._http.post(
+            url,
+            json={
+                "query": query,
+                "sort": [{"timestamp": "desc"}],
+                "from": offset,
+                "size": limit,
+            },
+            headers=ES8_HEADERS,
+        )
+        r.raise_for_status()
+        return r.json()
 
     # ------------------------------------------------------------------
     # 按域名分组聚合
@@ -203,10 +207,9 @@ class AlertRepo:
             },
         }
         url = f"{self._es_base}/{events_index_wildcard()}/_search"
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            r = await client.post(url, json=body, headers=ES8_HEADERS)
-            r.raise_for_status()
-            return r.json()
+        r = await self._http.post(url, json=body, headers=ES8_HEADERS)
+        r.raise_for_status()
+        return r.json()
 
     # ------------------------------------------------------------------
     # 按域名批量确认
@@ -215,24 +218,23 @@ class AlertRepo:
     async def acknowledge_by_domain(self, domains: list[str]) -> int:
         """返回已更新的文档数。"""
         url = f"{self._es_base}/{events_index_wildcard()}/_update_by_query"
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            r = await client.post(
-                url,
-                json={
-                    "query": {
-                        "bool": {
-                            "must": [
-                                {"terms": {"domain.keyword": domains}},
-                                {"term": {"acknowledged": False}},
-                            ]
-                        }
-                    },
-                    "script": {"source": "ctx._source.acknowledged = true"},
+        r = await self._http.post(
+            url,
+            json={
+                "query": {
+                    "bool": {
+                        "must": [
+                            {"terms": {"domain.keyword": domains}},
+                            {"term": {"acknowledged": False}},
+                        ]
+                    }
                 },
-                headers=ES8_HEADERS,
-            )
-            r.raise_for_status()
-            return r.json().get("updated", 0)
+                "script": {"source": "ctx._source.acknowledged = true"},
+            },
+            headers=ES8_HEADERS,
+        )
+        r.raise_for_status()
+        return r.json().get("updated", 0)
 
     # ------------------------------------------------------------------
     # 统计汇总
@@ -268,10 +270,9 @@ class AlertRepo:
             },
         }
         url = f"{self._es_base}/{wildcard}/_search"
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            r = await client.post(url, json=body, headers=ES8_HEADERS)
-            r.raise_for_status()
-            return r.json()
+        r = await self._http.post(url, json=body, headers=ES8_HEADERS)
+        r.raise_for_status()
+        return r.json()
 
     # ------------------------------------------------------------------
     # 单条告警
@@ -280,15 +281,14 @@ class AlertRepo:
     async def get_alert(self, event_id: str) -> dict | None:
         """返回 _source dict 或 None（不存在时）。"""
         url = f"{self._es_base}/{events_index_wildcard()}/_search"
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            r = await client.post(
-                url,
-                json={"query": {"term": {"event_id.keyword": event_id}}, "size": 1},
-                headers=ES8_HEADERS,
-            )
-            r.raise_for_status()
-            hits = r.json()["hits"]["hits"]
-            return hits[0]["_source"] if hits else None
+        r = await self._http.post(
+            url,
+            json={"query": {"term": {"event_id.keyword": event_id}}, "size": 1},
+            headers=ES8_HEADERS,
+        )
+        r.raise_for_status()
+        hits = r.json()["hits"]["hits"]
+        return hits[0]["_source"] if hits else None
 
     # ------------------------------------------------------------------
     # 确认单条告警
@@ -297,16 +297,15 @@ class AlertRepo:
     async def acknowledge_alert(self, event_id: str) -> None:
         """通过 update_by_query 将单条告警标记为已确认。"""
         url = f"{self._es_base}/{events_index_wildcard()}/_update_by_query"
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            r = await client.post(
-                url,
-                json={
-                    "query": {"term": {"event_id.keyword": event_id}},
-                    "script": {"source": "ctx._source.acknowledged = true"},
-                },
-                headers=ES8_HEADERS,
-            )
-            r.raise_for_status()
+        r = await self._http.post(
+            url,
+            json={
+                "query": {"term": {"event_id.keyword": event_id}},
+                "script": {"source": "ctx._source.acknowledged = true"},
+            },
+            headers=ES8_HEADERS,
+        )
+        r.raise_for_status()
 
 
 # ---------------------------------------------------------------------------
@@ -323,7 +322,12 @@ class DashboardRepo:
         "family_dist": {"terms": {"field": "family.keyword", "size": 10}},
     }
 
-    def __init__(self, es_base: str) -> None:
+    def __init__(self, http: httpx.AsyncClient, es_base: str) -> None:
+        """
+        :param http:    共享 httpx.AsyncClient（应用级连接池，由 infra/connections 注入）
+        :param es_base: ES HTTP 基础地址，如 http://localhost:9200
+        """
+        self._http = http
         self._es_base = es_base
 
     async def dashboard_count_aggs(self, target: str, query: dict) -> dict:
@@ -333,16 +337,15 @@ class DashboardRepo:
         返回原始 ES JSON。
         """
         url = f"{self._es_base}/{target}/_search"
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            r = await client.post(
-                url,
-                json={"size": 0, "query": query, "aggs": self._AGG_TEMPLATE},
-                headers=ES8_HEADERS,
-            )
-            if r.status_code == 404:
-                raise IndexNotFoundError(target)
-            r.raise_for_status()
-            return r.json()
+        r = await self._http.post(
+            url,
+            json={"size": 0, "query": query, "aggs": self._AGG_TEMPLATE},
+            headers=ES8_HEADERS,
+        )
+        if r.status_code == 404:
+            raise IndexNotFoundError(target)
+        r.raise_for_status()
+        return r.json()
 
     async def qps_buckets(self, interval: str, granularity: str) -> list[dict]:
         """返回给定时间窗口的 date_histogram buckets 列表。"""
@@ -361,10 +364,9 @@ class DashboardRepo:
             },
         }
         url = f"{self._es_base}/{wildcard}/_search"
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            r = await client.post(url, json=body, headers=ES8_HEADERS)
-            r.raise_for_status()
-            return r.json()["aggregations"]["per_bucket"]["buckets"]
+        r = await self._http.post(url, json=body, headers=ES8_HEADERS)
+        r.raise_for_status()
+        return r.json()["aggregations"]["per_bucket"]["buckets"]
 
     async def recent_dga_alerts(self, limit: int = 30) -> list[dict]:
         """返回最近 DGA 告警（is_dga=True，按时间倒序），已格式化为 dict 列表。"""
@@ -378,21 +380,20 @@ class DashboardRepo:
             ],
         }
         url = f"{self._es_base}/{wildcard}/_search"
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            r = await client.post(url, json=body, headers=ES8_HEADERS)
-            r.raise_for_status()
-            alerts: list[dict] = []
-            for hit in r.json().get("hits", {}).get("hits", []):
-                src = hit["_source"]
-                alerts.append({
-                    "event_id": src.get("event_id", hit["_id"]),
-                    "domain": src.get("domain", ""),
-                    "score": src.get("score", 0),
-                    "family": src.get("family", "unknown"),
-                    "severity": src.get("severity", "medium"),
-                    "timestamp": src.get("timestamp", ""),
-                })
-            return alerts
+        r = await self._http.post(url, json=body, headers=ES8_HEADERS)
+        r.raise_for_status()
+        alerts: list[dict] = []
+        for hit in r.json().get("hits", {}).get("hits", []):
+            src = hit["_source"]
+            alerts.append({
+                "event_id": src.get("event_id", hit["_id"]),
+                "domain": src.get("domain", ""),
+                "score": src.get("score", 0),
+                "family": src.get("family", "unknown"),
+                "severity": src.get("severity", "medium"),
+                "timestamp": src.get("timestamp", ""),
+            })
+        return alerts
 
 
 # ---------------------------------------------------------------------------
@@ -403,7 +404,12 @@ class DashboardRepo:
 class ReportRepo:
     """报表统计 ES 数据访问：封装四类聚合查询体，不含业务规则。"""
 
-    def __init__(self, es_base: str) -> None:
+    def __init__(self, http: httpx.AsyncClient, es_base: str) -> None:
+        """
+        :param http:    共享 httpx.AsyncClient（应用级连接池，由 infra/connections 注入）
+        :param es_base: ES HTTP 基础地址，如 http://localhost:9200
+        """
+        self._http = http
         self._es_base = es_base
 
     async def query_trend(self, date_range_filter: dict) -> dict:
@@ -420,10 +426,9 @@ class ReportRepo:
             },
         }
         url = f"{self._es_base}/{wildcard}/_search"
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            r = await client.post(url, json=body, headers=ES8_HEADERS)
-            r.raise_for_status()
-            return r.json()
+        r = await self._http.post(url, json=body, headers=ES8_HEADERS, timeout=15.0)
+        r.raise_for_status()
+        return r.json()
 
     async def query_top_domains(self, date_range_filter: dict) -> dict:
         """Top 10 DGA 域名聚合（terms on domain.keyword）。返回原始 ES JSON。"""
@@ -437,10 +442,9 @@ class ReportRepo:
             "aggs": {"top": {"terms": {"field": "domain.keyword", "size": 10}}},
         }
         url = f"{self._es_base}/{wildcard}/_search"
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            r = await client.post(url, json=body, headers=ES8_HEADERS)
-            r.raise_for_status()
-            return r.json()
+        r = await self._http.post(url, json=body, headers=ES8_HEADERS, timeout=15.0)
+        r.raise_for_status()
+        return r.json()
 
     async def query_top_hosts(self, date_range_filter: dict) -> dict:
         """Top 10 受影响主机聚合（terms on src_ip.keyword + 唯一域名基数）。返回原始 ES JSON。"""
@@ -459,10 +463,9 @@ class ReportRepo:
             },
         }
         url = f"{self._es_base}/{wildcard}/_search"
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            r = await client.post(url, json=body, headers=ES8_HEADERS)
-            r.raise_for_status()
-            return r.json()
+        r = await self._http.post(url, json=body, headers=ES8_HEADERS, timeout=15.0)
+        r.raise_for_status()
+        return r.json()
 
     async def query_heatmap(self, date_range_filter: dict) -> dict:
         """热力图聚合（date_histogram by hour，用于 hour_of_day × day_of_week 矩阵）。返回原始 ES JSON。"""
@@ -477,7 +480,6 @@ class ReportRepo:
             },
         }
         url = f"{self._es_base}/{wildcard}/_search"
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            r = await client.post(url, json=body, headers=ES8_HEADERS)
-            r.raise_for_status()
-            return r.json()
+        r = await self._http.post(url, json=body, headers=ES8_HEADERS, timeout=15.0)
+        r.raise_for_status()
+        return r.json()

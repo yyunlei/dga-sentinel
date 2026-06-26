@@ -13,7 +13,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from business.infra.connections import get_redis_client
+from business.infra.connections import get_redis_client, get_es_http
 from business.repositories.es_repo import DashboardRepo
 from business.services.realtime_service import RealtimeService
 from business.middleware.rbac import require_analyst
@@ -33,10 +33,13 @@ class DashboardStats(BaseModel):
 
 
 @router.get("/dashboard/stats", dependencies=[Depends(require_analyst)])
-async def get_dashboard_stats(redis=Depends(get_redis_client)):
+async def get_dashboard_stats(
+    redis=Depends(get_redis_client),
+    http=Depends(get_es_http),
+):
     """获取仪表盘统计数据：Redis 缓存 → ES 聚合"""
     settings = get_settings()
     es_base = settings.es_hosts.split(",")[0].strip()
-    repo = DashboardRepo(es_base=es_base)
+    repo = DashboardRepo(http=http, es_base=es_base)
     svc = RealtimeService(repo=repo, redis=redis, settings=settings)
     return await svc.get_dashboard_stats()

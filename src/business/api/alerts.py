@@ -5,12 +5,13 @@ HTTP 层：解析请求 → 调 AlertService → 包装响应/异常。
 """
 from __future__ import annotations
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from elasticsearch import AsyncElasticsearch
 
 from business.repositories.es_repo import AlertRepo
-from business.infra.connections import get_es_client
+from business.infra.connections import get_es_client, get_es_http
 from business.services.alert_service import AlertService
 from business.middleware.rbac import require_analyst, require_write
 from common.config import get_settings
@@ -76,12 +77,15 @@ class AlertStatsResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def _service(es: AsyncElasticsearch | None = Depends(get_es_client)) -> AlertService:
-    """DI 工厂：注入 AlertRepo → AlertService。"""
-    if es is None:
+def _service(
+    es: AsyncElasticsearch | None = Depends(get_es_client),
+    http: httpx.AsyncClient | None = Depends(get_es_http),
+) -> AlertService:
+    """DI 工厂：注入 AlertRepo（共享 httpx 连接池）→ AlertService。"""
+    if es is None or http is None:
         raise HTTPException(status_code=503, detail="Elasticsearch unavailable")
     es_base = get_settings().es_hosts.split(",")[0].strip()
-    return AlertService(repo=AlertRepo(es, es_base))
+    return AlertService(repo=AlertRepo(es=es, http=http, es_base=es_base))
 
 
 # ---------------------------------------------------------------------------

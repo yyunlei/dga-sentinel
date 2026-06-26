@@ -1,12 +1,14 @@
 """
 Gateway — 数据库连接管理
 统一管理 asyncpg (PostgreSQL) + AsyncElasticsearch + Redis 连接
+以及应用级共享 httpx 客户端（ES 查询池化专用）
 """
 from __future__ import annotations
 
 from fastapi import FastAPI, Request
 import asyncpg
 from elasticsearch import AsyncElasticsearch
+import httpx
 import redis.asyncio as aioredis
 
 from common.config import get_settings
@@ -58,6 +60,17 @@ async def init_db(app: FastAPI) -> None:
         logger.warning("redis_client_failed", error=str(e))
         app.state.redis_client = None
 
+    # Shared pooled httpx client for ES queries (replaces per-call AsyncClient churn)
+    try:
+        app.state.es_http = httpx.AsyncClient(
+            timeout=httpx.Timeout(10.0),
+            limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
+        )
+        logger.info("es_http_created")
+    except Exception as e:
+        logger.warning("es_http_failed", error=str(e))
+        app.state.es_http = None
+
 
 async def close_db(app: FastAPI) -> None:
     """Close database connections on shutdown."""
@@ -73,6 +86,10 @@ async def close_db(app: FastAPI) -> None:
         await app.state.redis_client.close()
         logger.info("redis_client_closed")
 
+    if getattr(app.state, "es_http", None):
+        await app.state.es_http.aclose()
+        logger.info("es_http_closed")
+
 
 def get_pg_pool(request: Request) -> asyncpg.Pool | None:
     """FastAPI dependency to get PostgreSQL pool."""
@@ -87,3 +104,8 @@ def get_es_client(request: Request) -> AsyncElasticsearch | None:
 def get_redis_client(request: Request):
     """FastAPI dependency to get Redis client."""
     return getattr(request.app.state, "redis_client", None)
+
+
+def get_es_http(request: Request) -> httpx.AsyncClient | None:
+    """FastAPI dependency to get shared ES httpx client (pooled, app-level)."""
+    return getattr(request.app.state, "es_http", None)
