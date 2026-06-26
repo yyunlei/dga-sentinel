@@ -5,5 +5,5 @@ COPY pyproject.toml ./
 COPY src/common     src/common
 COPY src/dag        src/dag
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -U pip setuptools wheel && pip install .
+    pip install -U pip setuptools wheel && pip install ".[dag]"
 CMD ["python", "-m", "dag.runtime"]

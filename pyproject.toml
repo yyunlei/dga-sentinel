@@ -17,28 +17,20 @@ dependencies = [
     "grpcio>=1.68.0",
     "grpcio-tools>=1.68.0",
     "protobuf>=5.29.0",
-    # --- ML / 模型 ---
+    # --- 特征工程(common/features 共用;unpickle sklearn 向量化器/scaler 需要) ---
     "numpy>=2.0.0",
     "pandas>=2.2.0",
     "scikit-learn>=1.5.0",
-    "xgboost>=2.1.0",
-    "tensorflow>=2.18.0",
     "joblib>=1.4.0",
     "scipy>=1.14.0",
-    "shap>=0.46.0",
-    # --- LangGraph / Agent ---
-    "langgraph>=0.2.0",
-    "langchain>=0.3.0",
-    "langchain-openai>=0.3.0",
-    "langchain-elasticsearch>=0.3.0",
+    # 重型 ML/LLM 依赖(tensorflow/xgboost/langchain/...)按服务拆分到
+    # [project.optional-dependencies],见下文 —— 避免每个镜像都装全量。
     # --- 数据存储 ---
     "aiokafka>=0.12.0",
     "elasticsearch[async]>=8.17.0,<9",
     "redis[hiredis]>=5.2.0",
     "asyncpg>=0.30.0",
     "sqlalchemy[asyncio]>=2.0.0",
-    # --- Embedding ---
-    "sentence-transformers>=3.0.0",
     # --- 可观测性 ---
     "prometheus-client>=0.21.0",
     "structlog>=24.4.0",
@@ -55,6 +47,22 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# 按服务拆分重型依赖:每个 Dockerfile 只装自己需要的(pip install ".[scoring]" 等)。
+# gateway/business 不需要任何 group —— base 已覆盖(纯 API,无 ML/LLM)。
+scoring = [
+    "tensorflow>=2.18.0",   # 多分类 CNN-Attention (.h5)
+    "xgboost>=2.1.0",       # 二分类模型 (joblib unpickle 需要)
+]
+dag = [
+    "langgraph>=0.2.0",     # StateGraph 管道编排
+]
+agents = [
+    "langgraph>=0.2.0",     # 多智能体 StateGraph
+    "langchain>=0.3.0",
+    "langchain-openai>=0.3.0",
+    "langchain-elasticsearch>=0.3.0",
+    "sentence-transformers>=3.0.0",  # RAG embedding(运行时,保守保留)
+]
 dev = [
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",

@@ -5,7 +5,7 @@ COPY pyproject.toml ./
 COPY src/common     src/common
 COPY src/ai/scoring src/ai/scoring
 RUN --mount=type=cache,target=/root/.cache/pip \
-    python -m pip install -U pip setuptools wheel && pip install .
+    python -m pip install -U pip setuptools wheel && pip install ".[scoring]"
 COPY artifacts/     artifacts/
 EXPOSE 8001
 CMD ["uvicorn", "ai.scoring.main:app", "--host", "0.0.0.0", "--port", "8001"]
