@@ -1,0 +1,59 @@
+# DNS 隧道检测 pipeline
+pipeline:
+  name: dns-tunnel-v1
+  mode: stream
+  version: "1.0.0"
+
+nodes:
+  - id: ingest
+    type: kafka_consumer
+    config:
+      topic: dns-query-logs
+      group_id: dns-tunnel-detector-v1
+      auto_offset_reset: latest
+
+  - id: parse
+    type: dns_parser
+    config:
+      fields: [query_name, query_type, src_ip, timestamp, response_size]
+
+  - id: feature
+    type: feature_extractor
+    config:
+      extractors:
+        - entropy
+        - lexical
+        - ngram
+      window_size: 300s
+
+  - id: infer
+    type: scoring_service
+    config:
+      endpoint: "scoring-service:50051"
+      protocol: grpc
+      timeout_ms: 100
+
+  - id: postfilter
+    type: rule_chain
+    config:
+      rules:
+        - whitelist:
+            source: redis
+        - threshold:
+            default: 0.65
+
+  - id: sink
+    type: multi_sink
+    config:
+      targets:
+        - type: kafka
+          topic: dns-tunnel-alerts
+          condition: "score >= threshold"
+        - type: elasticsearch
+          index: dns-tunnel-events-{date}
+          condition: "always"
+
+checkpoint:
+  backend: redis
+  key_prefix: "ckpt:dns-tunnel-v1"
+  commit_interval: 5s

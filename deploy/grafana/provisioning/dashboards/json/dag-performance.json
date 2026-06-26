@@ -1,0 +1,47 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "dga-dag-perf",
+    "title": "DAG Pipeline Performance",
+    "tags": ["dga", "dag"],
+    "timezone": "browser",
+    "refresh": "10s",
+    "time": { "from": "now-1h", "to": "now" },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Node Latency Heatmap",
+        "type": "heatmap",
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 },
+        "targets": [{ "expr": "rate(dga_dag_node_latency_seconds_bucket[5m])", "legendFormat": "{{pipeline_id}}/{{node_id}}" }],
+        "datasource": { "type": "prometheus", "uid": "prometheus" }
+      },
+      {
+        "id": 2,
+        "title": "Node Error Rate TopN",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+        "targets": [{ "expr": "topk(10, rate(dga_dag_node_errors_total[5m]))", "legendFormat": "{{pipeline_id}}/{{node_id}}" }],
+        "datasource": { "type": "prometheus", "uid": "prometheus" }
+      },
+      {
+        "id": 3,
+        "title": "Throughput Trend",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+        "targets": [{ "expr": "rate(dga_score_requests_total[1m])", "legendFormat": "{{endpoint}}" }],
+        "datasource": { "type": "prometheus", "uid": "prometheus" }
+      },
+      {
+        "id": 4,
+        "title": "Kafka Consumer Lag",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+        "targets": [{ "expr": "dga_kafka_consumer_lag", "legendFormat": "{{topic}}-{{partition}}" }],
+        "datasource": { "type": "prometheus", "uid": "prometheus" }
+      }
+    ],
+    "schemaVersion": 39
+  },
+  "overwrite": true
+}

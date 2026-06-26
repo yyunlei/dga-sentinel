@@ -1,0 +1,49 @@
+pipeline:
+  name: dga-batch-v1
+  mode: batch
+  version: "1.0.0"
+
+nodes:
+  - id: ingest
+    type: file_reader
+    config:
+      path: ""  # 运行时指定
+
+  - id: parse
+    type: dns_parser
+    config:
+      fields: [query_name, query_type, src_ip, timestamp]
+
+  - id: feature
+    type: feature_extractor
+    config:
+      extractors:
+        - lexical
+        - entropy
+
+  - id: infer
+    type: scoring_service
+    config:
+      endpoint: "http://localhost:8001"
+      protocol: http
+      timeout_ms: 1000
+
+  - id: threshold
+    type: threshold
+    config:
+      default: 0.7
+
+  - id: sink
+    type: multi_sink
+    config:
+      targets:
+        - type: es
+          index: dga-events-{date}
+          condition: always
+        - type: starrocks
+          table: dga_events
+          condition: always
+
+checkpoint:
+  backend: redis
+  key_prefix: "ckpt:dga-batch-v1"

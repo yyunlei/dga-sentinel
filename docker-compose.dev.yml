@@ -1,0 +1,21 @@
+version: "3.9"
+
+# ============================================================
+# 开发环境覆盖 — docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+# 减少资源占用，适合本地开发
+# ============================================================
+
+services:
+  elasticsearch:
+    environment:
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+
+  kafka:
+    environment:
+      - KAFKA_CFG_LOG_RETENTION_HOURS=24
+
+  # 开发模式下可以不启动 StarRocks 以节省资源
+  starrocks-fe:
+    profiles: ["full"]
+  starrocks-be:
+    profiles: ["full"]

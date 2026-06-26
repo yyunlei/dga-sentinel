@@ -1,0 +1,14 @@
+notifiers:
+  - name: email-alerts
+    type: email
+    uid: email-default
+    is_default: true
+    settings:
+      addresses: "security-team@example.com"
+
+  - name: webhook-alerts
+    type: webhook
+    uid: webhook-default
+    settings:
+      url: "http://gateway:8000/api/alerts/webhook"
+      httpMethod: POST

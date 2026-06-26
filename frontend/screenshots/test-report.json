@@ -1,0 +1,308 @@
+[
+  {
+    "page": "导航与布局",
+    "feature": "侧边栏菜单",
+    "status": "PASS",
+    "detail": "7 个菜单项"
+  },
+  {
+    "page": "导航与布局",
+    "feature": "Header",
+    "status": "PASS",
+    "detail": "Header 存在"
+  },
+  {
+    "page": "导航与布局",
+    "feature": "Footer",
+    "status": "PASS",
+    "detail": "Footer 存在"
+  },
+  {
+    "page": "导航与布局",
+    "feature": "健康状态",
+    "status": "PASS",
+    "detail": "Footer 显示: 系统正常|postgres: ok|redis: ok|elasticsearch: ok"
+  },
+  {
+    "page": "导航与布局",
+    "feature": "告警角标",
+    "status": "PASS",
+    "detail": "1 个角标"
+  },
+  {
+    "page": "导航与布局",
+    "feature": "侧边栏折叠",
+    "status": "PASS",
+    "detail": "折叠功能正常"
+  },
+  {
+    "page": "实时监控",
+    "feature": "统计卡片",
+    "status": "PASS",
+    "detail": "找到 7 个卡片"
+  },
+  {
+    "page": "实时监控",
+    "feature": "数据加载",
+    "status": "PASS",
+    "detail": "无错误提示"
+  },
+  {
+    "page": "实时监控",
+    "feature": "图表渲染",
+    "status": "PASS",
+    "detail": "SVG 元素: 16"
+  },
+  {
+    "page": "实时监控",
+    "feature": "API 状态",
+    "status": "PASS",
+    "detail": "API 正常"
+  },
+  {
+    "page": "域名检测",
+    "feature": "输入框",
+    "status": "PASS",
+    "detail": "输入框存在"
+  },
+  {
+    "page": "域名检测",
+    "feature": "检测结果",
+    "status": "PASS",
+    "detail": "返回 3 条结果"
+  },
+  {
+    "page": "告警中心",
+    "feature": "告警列表",
+    "status": "PASS",
+    "detail": "15 条告警"
+  },
+  {
+    "page": "告警中心",
+    "feature": "严重度筛选",
+    "status": "PASS",
+    "detail": "筛选器存在"
+  },
+  {
+    "page": "告警中心",
+    "feature": "筛选选项",
+    "status": "PASS",
+    "detail": "4 个选项"
+  },
+  {
+    "page": "告警中心",
+    "feature": "详情抽屉",
+    "status": "PASS",
+    "detail": "抽屉打开"
+  },
+  {
+    "page": "告警中心",
+    "feature": "告警数据",
+    "status": "PASS",
+    "detail": "首行:  | 2026-02-16 14:11:30 | 8294014a5889088da0ff563abca04f84.org"
+  },
+  {
+    "page": "告警详情页",
+    "feature": "基本信息",
+    "status": "PASS",
+    "detail": "1 个描述区块"
+  },
+  {
+    "page": "告警详情页",
+    "feature": "处置时间线",
+    "status": "PASS",
+    "detail": "1 个时间线"
+  },
+  {
+    "page": "告警详情页",
+    "feature": "ExplainAgent",
+    "status": "PASS",
+    "detail": "四维分析区块存在"
+  },
+  {
+    "page": "告警详情页",
+    "feature": "ResponseAgent",
+    "status": "PASS",
+    "detail": "处置建议区块存在"
+  },
+  {
+    "page": "告警详情页",
+    "feature": "Agent 服务",
+    "status": "WARN",
+    "detail": "部分 Agent 服务不可用"
+  },
+  {
+    "page": "模型管理",
+    "feature": "模型列表",
+    "status": "PASS",
+    "detail": "4 个模型"
+  },
+  {
+    "page": "模型管理",
+    "feature": "API 状态",
+    "status": "PASS",
+    "detail": "API 正常"
+  },
+  {
+    "page": "模型管理",
+    "feature": "操作按钮",
+    "status": "PASS",
+    "detail": "找到: 回滚, 上线, 下线, 历史"
+  },
+  {
+    "page": "DAG 编排",
+    "feature": "Pipeline 列表",
+    "status": "PASS",
+    "detail": "5 条 Pipeline"
+  },
+  {
+    "page": "DAG 编排",
+    "feature": "DAG 编辑器",
+    "status": "PASS",
+    "detail": "ReactFlow 元素: 19"
+  },
+  {
+    "page": "DAG 编排",
+    "feature": "节点面板",
+    "status": "PASS",
+    "detail": "节点面板存在"
+  },
+  {
+    "page": "DAG 编排",
+    "feature": "保存功能",
+    "status": "WARN",
+    "detail": "未找到保存按钮"
+  },
+  {
+    "page": "分析报表",
+    "feature": "报表卡片",
+    "status": "PASS",
+    "detail": "4 个卡片"
+  },
+  {
+    "page": "分析报表",
+    "feature": "日期选择器",
+    "status": "PASS",
+    "detail": "1 个日期选择器"
+  },
+  {
+    "page": "分析报表",
+    "feature": "数据表格",
+    "status": "PASS",
+    "detail": "2 个表格"
+  },
+  {
+    "page": "分析报表",
+    "feature": "API 状态",
+    "status": "PASS",
+    "detail": "API 正常"
+  },
+  {
+    "page": "Agent 监控",
+    "feature": "监控卡片",
+    "status": "PASS",
+    "detail": "6 个卡片"
+  },
+  {
+    "page": "Agent 监控",
+    "feature": "API 状态",
+    "status": "PASS",
+    "detail": "API 正常"
+  },
+  {
+    "page": "Agent 监控",
+    "feature": "Agent 状态标签",
+    "status": "PASS",
+    "detail": "16 个标签"
+  },
+  {
+    "page": "Chat 智能助手",
+    "feature": "浮动按钮",
+    "status": "PASS",
+    "detail": "Chat 面板打开"
+  },
+  {
+    "page": "Chat 智能助手",
+    "feature": "模式切换",
+    "status": "PASS",
+    "detail": "Segmented 控件存在"
+  },
+  {
+    "page": "Chat 智能助手",
+    "feature": "欢迎消息",
+    "status": "PASS",
+    "detail": "欢迎消息显示"
+  },
+  {
+    "page": "Chat 智能助手",
+    "feature": "Text2SQL 查询",
+    "status": "PASS",
+    "detail": "已发送查询"
+  },
+  {
+    "page": "Chat 智能助手",
+    "feature": "RAG 模式切换",
+    "status": "PASS",
+    "detail": "切换到知识库模式"
+  },
+  {
+    "page": "Chat 智能助手",
+    "feature": "RAG 查询",
+    "status": "PASS",
+    "detail": "已发送 RAG 查询"
+  },
+  {
+    "page": "API 端点",
+    "feature": "healthz",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "feature": "readyz",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "feature": "alerts",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "feature": "models",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "feature": "dag pipelines",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "feature": "dashboard stats",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "feature": "reports stats",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "feature": "agent metrics",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "控制台错误",
+    "feature": "全页面",
+    "status": "PASS",
+    "detail": "无控制台错误"
+  }
+]

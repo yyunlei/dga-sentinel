@@ -1,0 +1,10 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Full height */
+    background-color: #f8f9fa; /* Light background color */
+}
+.container {
+    max-width: 600px; /* Limit the width */
+}

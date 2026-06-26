@@ -1,0 +1,68 @@
+pipeline:
+  name: dga-realtime-v1
+  mode: stream
+  version: "1.0.0"
+
+nodes:
+  - id: ingest
+    type: kafka_consumer
+    config:
+      topic: dns-query-logs
+      group_id: dga-detector-v1
+      auto_offset_reset: latest
+
+  - id: parse
+    type: dns_parser
+    config:
+      fields: [query_name, query_type, src_ip, timestamp]
+
+  - id: feature
+    type: feature_extractor
+    config:
+      extractors:
+        - lexical
+        - entropy
+
+  - id: infer
+    type: scoring_service
+    config:
+      endpoint: "http://scoring-service:8001"
+      protocol: http
+      timeout_ms: 3000
+
+  - id: whitelist
+    type: whitelist
+    config:
+      source: static
+      static:
+        - google.com
+        - microsoft.com
+        - apple.com
+        - amazon.com
+        - cloudflare.com
+        - github.com
+        - githubusercontent.com
+
+  - id: threshold
+    type: threshold
+    config:
+      default: 0.7
+      tenants:
+        finance: 0.5
+        dev: 0.9
+
+  - id: sink
+    type: multi_sink
+    config:
+      targets:
+        - type: kafka
+          topic: dga-alerts
+          condition: "score >= threshold"
+        - type: es
+          index: dga-events-{date}
+          condition: always
+
+checkpoint:
+  backend: redis
+  key_prefix: "ckpt:dga-realtime-v1"
+  commit_interval: 5s

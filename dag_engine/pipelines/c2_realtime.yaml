@@ -1,0 +1,58 @@
+# C2 域名检测 pipeline
+pipeline:
+  name: c2-realtime-v1
+  mode: stream
+  version: "1.0.0"
+
+nodes:
+  - id: ingest
+    type: kafka_consumer
+    config:
+      topic: dns-query-logs
+      group_id: c2-detector-v1
+      auto_offset_reset: latest
+
+  - id: parse
+    type: dns_parser
+    config:
+      fields: [query_name, query_type, src_ip, timestamp]
+
+  - id: feature
+    type: feature_extractor
+    config:
+      extractors:
+        - entropy
+        - lexical
+      window_size: 120s
+
+  - id: infer
+    type: scoring_service
+    config:
+      endpoint: "scoring-service:50051"
+      protocol: grpc
+      timeout_ms: 100
+
+  - id: postfilter
+    type: rule_chain
+    config:
+      rules:
+        - whitelist:
+            source: redis
+        - threshold:
+            default: 0.6
+
+  - id: sink
+    type: multi_sink
+    config:
+      targets:
+        - type: kafka
+          topic: c2-alerts
+          condition: "score >= threshold"
+        - type: elasticsearch
+          index: c2-events-{date}
+          condition: "always"
+
+checkpoint:
+  backend: redis
+  key_prefix: "ckpt:c2-realtime-v1"
+  commit_interval: 5s

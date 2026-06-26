@@ -1,0 +1,368 @@
+# ============================================================
+# DGA 智能威胁检测平台 — Optimized Docker Compose
+# 用法:
+#   export DOCKER_BUILDKIT=1
+#   mkdir -p ./data/{kafka,elasticsearch,redis,postgres,starrocks/fe,starrocks/be,prometheus,grafana,jaeger,agent}
+#   docker compose up -d --build
+#
+# Data persistence: all volumes mount under ./data/<service> by default.
+# Override by setting DATA_DIR env var before running docker compose:
+#   export DATA_DIR=/mnt/data  && docker compose up -d
+# ============================================================
+
+services:
+  # ── Kafka (KRaft, 无 ZooKeeper) ────────────────────────────
+  kafka:
+    image: apache/kafka:4.2.0-rc4
+    container_name: dga-sentinel-kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"   # 内部/容器网络
+      - "9094:9094"   # 宿主机/外部访问
+    environment:
+      # KRaft 核心
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      # Listener
+      KAFKA_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094"
+      # 外部访问地址：默认 localhost；如果跨机器访问，改成宿主机IP或域名
+      # 例如：export KAFKA_EXTERNAL_HOST=192.168.1.10
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092,EXTERNAL://${KAFKA_EXTERNAL_HOST:-localhost}:9094"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT"
+
+      # 常用配置
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+      # KRaft Cluster ID（你已有则保持不变）
+      CLUSTER_ID: "MkQzNDk2NTUwNDJhNDY4Yg=="
+
+    # 你当前用的是宿主机目录持久化（推荐：便于定位/备份）
+    volumes:
+      - ${DATA_DIR:-./data}/kafka:/var/lib/kafka/data
+
+    healthcheck:
+      # 兼容不同镜像布局：先走 PATH，再尝试 /opt/kafka/bin
+      test:
+        [
+          "CMD-SHELL",
+          "(command -v kafka-topics.sh >/dev/null 2>&1 && kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1) || (/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1) || exit 1"
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    networks: [dga-net]
+
+  # ── Elasticsearch ─────────────────────────────────────────
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    container_name: dga-sentinel-elasticsearch
+    restart: unless-stopped
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      # ⚠️ 生产环境必须启用: xpack.security.enabled=true 并配置 TLS
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    # ES 常见限制（否则容易启动失败/不稳定）
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - ${DATA_DIR:-./data}/elasticsearch:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks: [dga-net]
+
+  # ── Redis ────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: dga-sentinel-redis
+    restart: unless-stopped
+    ports:
+      - "16379:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - ${DATA_DIR:-./data}/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks: [dga-net]
+
+  # ── PostgreSQL ───────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: dga-sentinel-postgres
+    restart: unless-stopped
+    ports:
+      - "15432:5432"
+    environment:
+      POSTGRES_USER: dga
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dga_password}
+      POSTGRES_DB: dga_platform
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ${DATA_DIR:-./data}/postgres:/var/lib/postgresql/data
+      - ./deploy/init-scripts/pg-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dga -d dga_platform >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks: [dga-net]
+
+  # ── StarRocks ────────────────────────────────────────────
+  starrocks-fe:
+    image: starrocks/fe-ubuntu:3.3-latest
+    container_name: dga-sentinel-starrocks-fe
+    restart: unless-stopped
+    command: ["/opt/starrocks/fe/bin/start_fe.sh"]
+    ports:
+      - "8030:8030"
+      - "9030:9030"
+    volumes:
+      - ${DATA_DIR:-./data}/starrocks/fe:/opt/starrocks/fe/meta
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8030/api/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks:
+      dga-net:
+        # 固定 FE IP，匹配 meta/image/ROLE 中记录的节点身份(192.168.0.2)，
+        # 否则单 FE 重启拿到新 IP 会永远卡在 INIT(FE type transfer 失败)
+        ipv4_address: 192.168.0.2
+
+  starrocks-be:
+    image: starrocks/be-ubuntu:3.3-latest
+    container_name: dga-sentinel-starrocks-be
+    restart: unless-stopped
+    command: ["/opt/starrocks/be/bin/start_be.sh"]
+    ports:
+      - "8040:8040"
+    environment:
+      # ✅ 用 service 名，而不是 container_name
+      - SR_FE_HOST=starrocks-fe
+    depends_on:
+      starrocks-fe:
+        condition: service_healthy
+    volumes:
+      - ${DATA_DIR:-./data}/starrocks/be:/opt/starrocks/be/storage
+    networks:
+      dga-net:
+        # BE 同样钉死静态 IP，FE 元数据按 IP 注册 BE，漂移会导致 No route to host
+        ipv4_address: 192.168.0.3
+
+  # ── Prometheus ───────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.54.0
+    container_name: dga-sentinel-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+      - ${DATA_DIR:-./data}/prometheus:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=7d"
+    networks: [dga-net]
+
+  # ── Grafana ──────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: dga-sentinel-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ${DATA_DIR:-./data}/grafana:/var/lib/grafana
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      prometheus:
+        condition: service_started
+    networks: [dga-net]
+
+  # ── Jaeger (Tracing) ─────────────────────────────────────
+  jaeger:
+    image: jaegertracing/all-in-one:1.54
+    container_name: dga-sentinel-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    volumes:
+      - ${DATA_DIR:-./data}/jaeger:/tmp
+    networks: [dga-net]
+
+  # ── 应用服务 ──────────────────────────────────────────────
+  scoring-service:
+    build:
+      context: .
+      dockerfile: scoring_service/Dockerfile
+    container_name: dga-sentinel-scoring
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    env_file: .env
+    # 容器互访用 service name；覆盖 .env 里给 host 脚本用的 localhost 默认值
+    environment:
+      - PG_DSN=postgresql://dga:${POSTGRES_PASSWORD:-dga_password}@postgres:5432/dga_platform
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./artifacts:/app/artifacts:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [dga-net]
+
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    container_name: dga-sentinel-gateway
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      # 容器互访强制使用 service name（覆盖 .env 里供宿主机直连用的 localhost 默认值）
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - REDIS_URL=redis://redis:6379/0
+      - PG_DSN=postgresql://dga:${POSTGRES_PASSWORD:-dga_password}@postgres:5432/dga_platform
+      - ES_HOSTS=http://elasticsearch:9200
+      - STARROCKS_HOST=starrocks-fe
+      - STARROCKS_HTTP_PORT=8030
+      - SCORING_HOST=scoring-service
+      # ES 服务为 8.17，客户端 9.x 会发 compatible-with=9 导致 400，强制兼容 8
+      - ELASTIC_CLIENT_APIVERSIONING=1
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      scoring-service:
+        condition: service_started
+    networks: [dga-net]
+
+  dag-engine:
+    build:
+      context: .
+      dockerfile: dag_engine/Dockerfile
+    container_name: dga-sentinel-dag-engine
+    restart: unless-stopped
+    env_file: .env
+    # 容器互访强制使用 service name（覆盖 .env 里供宿主机直连用的 localhost 默认值）
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - REDIS_URL=redis://redis:6379/0
+      - PG_DSN=postgresql://dga:${POSTGRES_PASSWORD:-dga_password}@postgres:5432/dga_platform
+      - ES_HOSTS=http://elasticsearch:9200
+      - STARROCKS_HOST=starrocks-fe
+      - STARROCKS_HTTP_PORT=8030
+      - SCORING_HOST=scoring-service
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      scoring-service:
+        condition: service_started
+    networks: [dga-net]
+
+  agent-layer:
+    build:
+      context: .
+      dockerfile: agent_layer/Dockerfile
+    container_name: dga-sentinel-agent
+    restart: unless-stopped
+    env_file: .env
+    # 容器互访强制使用 service name
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - ES_HOSTS=http://elasticsearch:9200
+      - PG_DSN=postgresql://dga:${POSTGRES_PASSWORD:-dga_password}@postgres:5432/dga_platform
+      - STARROCKS_HOST=starrocks-fe
+      - STARROCKS_HTTP_PORT=8030
+      - SCORING_HOST=scoring-service
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_ALERT_TOPIC=dga-alerts
+    depends_on:
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ${DATA_DIR:-./data}/agent:/app/data
+    networks: [dga-net]
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dga-sentinel-frontend
+    restart: unless-stopped
+    ports:
+      - "13001:80"
+    depends_on:
+      gateway:
+        condition: service_started
+    networks: [dga-net]
+
+networks:
+  dga-net:
+    driver: bridge
+    ipam:
+      config:
+        # 动态分配池挪到 192.168.1.0/24，避开 FE 静态占用的 192.168.0.2
+        # 否则其它容器会抢先拿到 .2 导致 FE 启动报 Address already in use
+        - subnet: 192.168.0.0/20
+          ip_range: 192.168.1.0/24
+          gateway: 192.168.0.1
+
+# volumes:
+#   es_data:
+#   redis_data:
+#   pg_data:
+#   starrocks_fe_data:
+#   starrocks_be_data:
+#   prometheus_data:
+#   grafana_data:

@@ -1,0 +1,72 @@
+groups:
+  - name: dga_platform_alerts
+    rules:
+      # 1. HighScoringLatency — 评分延迟过高
+      - alert: HighScoringLatency
+        expr: histogram_quantile(0.95, rate(dga_score_latency_seconds_bucket[5m])) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Scoring latency P95 > 100ms"
+          description: "Scoring service P95 latency is {{ $value | humanizeDuration }} over the last 5 minutes."
+
+      # 2. HighErrorRate — API 错误率过高
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API error rate > 5%"
+          description: "HTTP 5xx error rate is {{ $value | humanizePercentage }} over the last 5 minutes."
+
+      # 3. ModelDrift — 模型漂移检测
+      - alert: ModelDrift
+        expr: rate(dga_hits_total[1h]) / rate(dga_score_requests_total[1h]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Possible model drift — DGA hit rate > 80%"
+          description: "DGA detection hit rate is {{ $value | humanizePercentage }}, which may indicate model drift or data quality issues."
+
+      # 4. KafkaConsumerLag — Kafka 消费延迟
+      - alert: KafkaConsumerLag
+        expr: kafka_consumer_group_lag > 10000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka consumer lag > 10000"
+          description: "Consumer group {{ $labels.group }} has lag of {{ $value }} on topic {{ $labels.topic }}."
+
+      # 5. AgentTimeout — Agent 响应超时
+      - alert: AgentTimeout
+        expr: histogram_quantile(0.95, rate(agent_execution_duration_seconds_bucket[5m])) > 10
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Agent execution P95 > 10s"
+          description: "Agent {{ $labels.agent_type }} P95 execution time is {{ $value | humanizeDuration }}."
+
+      # 6. ScoringServiceDown — 评分服务不可用
+      - alert: ScoringServiceDown
+        expr: up{job="scoring-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Scoring service is down"
+          description: "Scoring service has been unreachable for more than 1 minute."
+
+      # 7. HighMemoryUsage — 内存使用过高
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / 1024 / 1024 > 2048
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Process memory > 2GB"
+          description: "{{ $labels.job }} is using {{ $value | humanize }}MB of memory."

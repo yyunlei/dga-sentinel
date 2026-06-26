@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package dga.scoring;
+
+option python_generic_services = true;
+
+// 评分服务 gRPC 接口定义
+service ScoringService {
+  // 单域名评分
+  rpc ScoreDomain (ScoreRequest) returns (ScoreResponse);
+  // 批量域名评分
+  rpc ScoreBatch (BatchScoreRequest) returns (BatchScoreResponse);
+  // 健康检查
+  rpc HealthCheck (Empty) returns (HealthResponse);
+}
+
+message Empty {}
+
+message ScoreRequest {
+  string domain = 1;
+  string tenant_id = 2;
+  string trace_id = 3;
+  string model_version = 4;  // 空 = 使用 production 版本
+}
+
+message ScoreResponse {
+  string domain = 1;
+  float score = 2;
+  bool is_dga = 3;
+  string family = 4;
+  float family_confidence = 5;
+  string model_version = 6;
+  string trace_id = 7;
+  float latency_ms = 8;
+}
+
+message BatchScoreRequest {
+  repeated string domains = 1;
+  string tenant_id = 2;
+  string trace_id = 3;
+  string model_version = 4;
+}
+
+message BatchScoreResponse {
+  repeated ScoreResponse results = 1;
+  string trace_id = 2;
+  float total_latency_ms = 3;
+}
+
+message HealthResponse {
+  string status = 1;  // "serving" / "not_serving"
+  string model_binary_version = 2;
+  string model_multi_version = 3;
+}

@@ -1,0 +1,374 @@
+[
+  {
+    "page": "布局",
+    "test": "侧边栏菜单",
+    "status": "PASS",
+    "detail": "7 项: 实时监控, 域名检测, 告警中心, 模型管理, DAG 编排, 分析报表, Agent 监控"
+  },
+  {
+    "page": "布局",
+    "test": "Header",
+    "status": "PASS",
+    "detail": "存在"
+  },
+  {
+    "page": "布局",
+    "test": "Footer 健康状态",
+    "status": "PASS",
+    "detail": "系统正常|postgres: ok|redis: ok|elasticsearch: ok"
+  },
+  {
+    "page": "布局",
+    "test": "告警角标",
+    "status": "PASS",
+    "detail": "角标值: 99+"
+  },
+  {
+    "page": "布局",
+    "test": "侧边栏折叠",
+    "status": "PASS",
+    "detail": "折叠成功"
+  },
+  {
+    "page": "布局",
+    "test": "路由导航",
+    "status": "PASS",
+    "detail": "7 个路由全部可达"
+  },
+  {
+    "page": "Dashboard",
+    "test": "卡片: 今日检测量",
+    "status": "PASS",
+    "detail": "存在"
+  },
+  {
+    "page": "Dashboard",
+    "test": "卡片: DGA 命中",
+    "status": "PASS",
+    "detail": "存在"
+  },
+  {
+    "page": "Dashboard",
+    "test": "卡片: 命中率",
+    "status": "PASS",
+    "detail": "存在"
+  },
+  {
+    "page": "Dashboard",
+    "test": "卡片: P95 延迟",
+    "status": "PASS",
+    "detail": "存在"
+  },
+  {
+    "page": "Dashboard",
+    "test": "QPS 趋势图",
+    "status": "PASS",
+    "detail": "检查 QPS 图表"
+  },
+  {
+    "page": "Dashboard",
+    "test": "家族分布图",
+    "status": "PASS",
+    "detail": "检查饼图"
+  },
+  {
+    "page": "Dashboard",
+    "test": "实时告警流",
+    "status": "PASS",
+    "detail": "告警流区块"
+  },
+  {
+    "page": "Dashboard",
+    "test": "错误状态",
+    "status": "PASS",
+    "detail": "无错误"
+  },
+  {
+    "page": "Dashboard",
+    "test": "数据真实性",
+    "status": "PASS",
+    "detail": "今日检测量: 12603"
+  },
+  {
+    "page": "域名检测",
+    "test": "输入框",
+    "status": "PASS",
+    "detail": "textarea 存在"
+  },
+  {
+    "page": "域名检测",
+    "test": "检测结果",
+    "status": "PASS",
+    "detail": "3 条结果"
+  },
+  {
+    "page": "域名检测",
+    "test": "评分显示",
+    "status": "PASS",
+    "detail": "分数可见"
+  },
+  {
+    "page": "域名检测",
+    "test": "API 状态",
+    "status": "PASS",
+    "detail": "检测服务正常"
+  },
+  {
+    "page": "告警中心",
+    "test": "告警列表",
+    "status": "PASS",
+    "detail": "15 条告警"
+  },
+  {
+    "page": "告警中心",
+    "test": "严重度筛选器",
+    "status": "PASS",
+    "detail": "存在"
+  },
+  {
+    "page": "告警中心",
+    "test": "筛选选项",
+    "status": "PASS",
+    "detail": "4 个选项"
+  },
+  {
+    "page": "告警中心",
+    "test": "详情抽屉/跳转",
+    "status": "PASS",
+    "detail": "抽屉打开"
+  },
+  {
+    "page": "告警中心",
+    "test": "API 状态",
+    "status": "PASS",
+    "detail": "API 正常"
+  },
+  {
+    "page": "告警详情",
+    "test": "基本信息",
+    "status": "PASS",
+    "detail": "1 个描述区块"
+  },
+  {
+    "page": "告警详情",
+    "test": "处置时间线",
+    "status": "PASS",
+    "detail": "1 个时间线"
+  },
+  {
+    "page": "告警详情",
+    "test": "ExplainAgent",
+    "status": "PASS",
+    "detail": "四维分析区块"
+  },
+  {
+    "page": "告警详情",
+    "test": "ResponseAgent",
+    "status": "PASS",
+    "detail": "处置建议区块"
+  },
+  {
+    "page": "告警详情",
+    "test": "Agent 服务",
+    "status": "WARN",
+    "detail": "部分 Agent 不可用"
+  },
+  {
+    "page": "模型管理",
+    "test": "模型列表",
+    "status": "PASS",
+    "detail": "4 个模型"
+  },
+  {
+    "page": "模型管理",
+    "test": "API 状态",
+    "status": "PASS",
+    "detail": "API 正常"
+  },
+  {
+    "page": "模型管理",
+    "test": "操作按钮",
+    "status": "PASS",
+    "detail": "找到: 回滚, 上线, 下线, 历史"
+  },
+  {
+    "page": "模型管理",
+    "test": "版本信息",
+    "status": "PASS",
+    "detail": "版本列"
+  },
+  {
+    "page": "DAG 编排",
+    "test": "Pipeline 列表",
+    "status": "PASS",
+    "detail": "5 条 Pipeline"
+  },
+  {
+    "page": "DAG 编排",
+    "test": "DAG 编辑器",
+    "status": "PASS",
+    "detail": "ReactFlow: 1"
+  },
+  {
+    "page": "DAG 编排",
+    "test": "节点面板",
+    "status": "PASS",
+    "detail": "节点面板"
+  },
+  {
+    "page": "DAG 编排",
+    "test": "加载 Pipeline",
+    "status": "PASS",
+    "detail": "加载后节点数: 7"
+  },
+  {
+    "page": "DAG 编排",
+    "test": "右侧配置面板",
+    "status": "PASS",
+    "detail": "已打开"
+  },
+  {
+    "page": "DAG 编排",
+    "test": "可折叠配置面板",
+    "status": "PASS",
+    "detail": "5 个面板"
+  },
+  {
+    "page": "DAG 编排",
+    "test": "保存功能",
+    "status": "PASS",
+    "detail": "保存按钮"
+  },
+  {
+    "page": "分析报表",
+    "test": "报表卡片",
+    "status": "PASS",
+    "detail": "4 个卡片"
+  },
+  {
+    "page": "分析报表",
+    "test": "日期选择器",
+    "status": "PASS",
+    "detail": "1 个"
+  },
+  {
+    "page": "分析报表",
+    "test": "数据表格",
+    "status": "PASS",
+    "detail": "2 个表格"
+  },
+  {
+    "page": "分析报表",
+    "test": "API 状态",
+    "status": "PASS",
+    "detail": "API 正常"
+  },
+  {
+    "page": "Agent 监控",
+    "test": "监控卡片",
+    "status": "PASS",
+    "detail": "6 个卡片"
+  },
+  {
+    "page": "Agent 监控",
+    "test": "Agent 状态标签",
+    "status": "PASS",
+    "detail": "16 个标签"
+  },
+  {
+    "page": "Agent 监控",
+    "test": "API 状态",
+    "status": "PASS",
+    "detail": "API 正常"
+  },
+  {
+    "page": "Chat 助手",
+    "test": "浮动按钮",
+    "status": "PASS",
+    "detail": "Chat 面板打开"
+  },
+  {
+    "page": "Chat 助手",
+    "test": "模式切换",
+    "status": "PASS",
+    "detail": "Segmented 存在"
+  },
+  {
+    "page": "Chat 助手",
+    "test": "欢迎消息",
+    "status": "PASS",
+    "detail": "欢迎语"
+  },
+  {
+    "page": "Chat 助手",
+    "test": "Text2SQL",
+    "status": "PASS",
+    "detail": "已发送查询"
+  },
+  {
+    "page": "Chat 助手",
+    "test": "RAG 模式",
+    "status": "PASS",
+    "detail": "切换到知识库"
+  },
+  {
+    "page": "Chat 助手",
+    "test": "RAG 查询",
+    "status": "PASS",
+    "detail": "已发送 RAG 查询"
+  },
+  {
+    "page": "API 端点",
+    "test": "healthz",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "test": "readyz",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "test": "alerts",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "test": "models",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "test": "dag pipelines",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "test": "dashboard stats",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "test": "reports stats",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "API 端点",
+    "test": "agent metrics",
+    "status": "PASS",
+    "detail": "200 OK"
+  },
+  {
+    "page": "控制台错误",
+    "test": "全页面",
+    "status": "PASS",
+    "detail": "无控制台错误"
+  }
+]

@@ -1,0 +1,63 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "agent-monitoring",
+    "title": "Agent Monitoring",
+    "tags": ["dga", "agents"],
+    "timezone": "browser",
+    "refresh": "10s",
+    "time": { "from": "now-1h", "to": "now" },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Agent Execution Count",
+        "type": "barchart",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+        "targets": [
+          { "expr": "agent_execution_total{agent=~\"triage|explain|threat_intel|response\"}", "legendFormat": "{{agent}}" }
+        ],
+        "datasource": { "type": "prometheus", "uid": "prometheus" }
+      },
+      {
+        "id": 2,
+        "title": "Agent Average Latency",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "targets": [
+          { "expr": "rate(agent_latency_seconds_sum[5m]) / rate(agent_latency_seconds_count[5m])", "legendFormat": "{{agent}}" }
+        ],
+        "datasource": { "type": "prometheus", "uid": "prometheus" }
+      },
+      {
+        "id": 3,
+        "title": "Agent Error Rate",
+        "type": "gauge",
+        "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+        "targets": [
+          { "expr": "rate(agent_errors_total[5m])", "legendFormat": "{{agent}}" }
+        ],
+        "datasource": { "type": "prometheus", "uid": "prometheus" }
+      },
+      {
+        "id": 4,
+        "title": "MCP Tool Call Distribution",
+        "type": "piechart",
+        "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
+        "targets": [
+          { "expr": "mcp_tool_calls_total", "legendFormat": "{{tool}}" }
+        ],
+        "datasource": { "type": "prometheus", "uid": "prometheus" }
+      },
+      {
+        "id": 5,
+        "title": "A2A Message Throughput",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+        "targets": [
+          { "expr": "rate(a2a_messages_total[1m])", "legendFormat": "{{from_agent}} -> {{to_agent}}" }
+        ],
+        "datasource": { "type": "prometheus", "uid": "prometheus" }
+      }
+    ]
+  }
+}

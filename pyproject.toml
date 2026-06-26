@@ -1,0 +1,70 @@
+[project]
+name = "dga-sentinel"
+version = "0.1.0"
+description = "DGA 智能威胁检测平台 — DAG 编排 + 多模型融合 + Agent 智能分析"
+requires-python = ">=3.12"
+dependencies = [
+    # --- Web / API ---
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "python-multipart>=0.0.20",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "websockets>=14.0",
+    # --- gRPC ---
+    "grpcio>=1.68.0",
+    "grpcio-tools>=1.68.0",
+    "protobuf>=5.29.0",
+    # --- ML / 模型 ---
+    "numpy>=2.0.0",
+    "pandas>=2.2.0",
+    "scikit-learn>=1.5.0",
+    "xgboost>=2.1.0",
+    "tensorflow>=2.18.0",
+    "joblib>=1.4.0",
+    "scipy>=1.14.0",
+    "shap>=0.46.0",
+    # --- LangGraph / Agent ---
+    "langgraph>=0.2.0",
+    "langchain>=0.3.0",
+    "langchain-openai>=0.3.0",
+    "langchain-elasticsearch>=0.3.0",
+    # --- 数据存储 ---
+    "aiokafka>=0.12.0",
+    "elasticsearch[async]>=8.17.0,<9",
+    "redis[hiredis]>=5.2.0",
+    "asyncpg>=0.30.0",
+    "sqlalchemy[asyncio]>=2.0.0",
+    # --- Embedding ---
+    "sentence-transformers>=3.0.0",
+    # --- 可观测性 ---
+    "prometheus-client>=0.21.0",
+    "structlog>=24.4.0",
+    "opentelemetry-api>=1.29.0",
+    "opentelemetry-sdk>=1.29.0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.29.0",
+    "opentelemetry-instrumentation-fastapi>=0.50b0",
+    "opentelemetry-instrumentation-asyncpg>=0.50b0",
+    "opentelemetry-instrumentation-httpx>=0.50b0",
+    # --- 工具 ---
+    "pyyaml>=6.0.0",
+    "httpx>=0.28.0",
+    "jinja2>=3.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.setuptools.packages.find]
+include = ["shared*", "gateway*", "scoring_service*", "dag_engine*", "agent_layer*"]
