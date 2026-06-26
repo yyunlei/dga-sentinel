@@ -1,6 +1,6 @@
 """查询路由 — /api/query
-POST {question, db_type} → {sql, data, explanation}
-通过 HTTP 调用 agent-layer 的 Text2SQL 引擎
+HTTP 层：解析请求 → 调 DetectionService.query_data → 包装响应/异常。
+不包含 httpx 调用逻辑，均委托给 DetectionService。
 """
 from __future__ import annotations
 
@@ -8,8 +8,8 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
-from business.middleware.auth import verify_token
 from business.middleware.rbac import require_analyst
+from business.services.detection_service import DetectionService
 from common.observability import get_logger
 
 router = APIRouter()
@@ -31,26 +31,22 @@ class QueryResponse(BaseModel):
     trace_id: str = ""
 
 
+def _service() -> DetectionService:
+    """DI 工厂：构造仅用于 query 编排的 DetectionService。"""
+    return DetectionService(agent_layer_url=AGENT_LAYER_URL)
+
+
 @router.post("/query", response_model=QueryResponse, dependencies=[Depends(require_analyst)])
-async def query_data(req: QueryRequest, request: Request):
+async def query_data(
+    req: QueryRequest,
+    request: Request,
+    svc: DetectionService = Depends(_service),
+):
     """自然语言查询数据 — 通过 HTTP dispatch 到 agent-layer"""
     trace_id = getattr(request.state, "trace_id", "")
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            # text2sql 不是 dispatch agent，是 agent-layer 的独立 endpoint /query
-            resp = await client.post(
-                f"{AGENT_LAYER_URL}/query",
-                json={"question": req.question, "db_type": req.db_type},
-            )
-            resp.raise_for_status()
-            result = resp.json()
-            return QueryResponse(
-                sql=result.get("sql", ""),
-                data=result.get("data", []),
-                explanation=result.get("explanation", ""),
-                error=result.get("error"),
-                trace_id=trace_id,
-            )
+        result = await svc.query_data(req.question, req.db_type, trace_id)
+        return QueryResponse(**result)
     except httpx.HTTPStatusError as e:
         logger.error("query_dispatch_error", status=e.response.status_code)
         raise HTTPException(status_code=503, detail="Query service unavailable")
