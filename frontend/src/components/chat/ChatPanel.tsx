@@ -47,7 +47,11 @@ function renderDataTable(data: Record<string, unknown>[]) {
 function isNumericValue(v: unknown): boolean {
   if (typeof v === 'number') return isFinite(v);
   if (v === null || v === '' || v === undefined) return false;
-  const n = parseFloat(String(v));
+  const s = String(v).trim();
+  if (s === '') return false;
+  // 用 Number() 而非 parseFloat:严格判断,避免日期串如 "2026-06-19"
+  // 被 parseFloat 解析为前导数字 2026 而误判为数值列（导致时序图退回表格）。
+  const n = Number(s);
   return !isNaN(n) && isFinite(n);
 }
 
