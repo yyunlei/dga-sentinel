@@ -46,7 +46,7 @@ async def test_rate_limiter_custom_limit():
 @pytest.mark.asyncio
 async def test_verify_token_dev_mode_no_credentials():
     """开发模式下无 token 返回默认 payload"""
-    with patch("gateway.middleware.auth.get_settings") as mock_settings:
+    with patch("business.middleware.auth.get_settings") as mock_settings:
         mock_settings.return_value = MagicMock(is_dev=True)
         from business.middleware.auth import verify_token
         result = await verify_token(credentials=None)
@@ -56,7 +56,7 @@ async def test_verify_token_dev_mode_no_credentials():
 @pytest.mark.asyncio
 async def test_verify_token_missing_in_prod():
     """生产模式下无 token 抛 401"""
-    with patch("gateway.middleware.auth.get_settings") as mock_settings:
+    with patch("business.middleware.auth.get_settings") as mock_settings:
         mock_settings.return_value = MagicMock(is_dev=False)
         from fastapi import HTTPException
         from business.middleware.auth import verify_token
@@ -68,7 +68,7 @@ async def test_verify_token_missing_in_prod():
 @pytest.mark.asyncio
 async def test_verify_token_invalid_jwt():
     """无效 JWT 抛 401"""
-    with patch("gateway.middleware.auth.get_settings") as mock_settings:
+    with patch("business.middleware.auth.get_settings") as mock_settings:
         mock_settings.return_value = MagicMock(
             is_dev=False, jwt_secret="test-secret", jwt_algorithm="HS256"
         )
