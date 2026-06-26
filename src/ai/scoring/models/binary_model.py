@@ -10,8 +10,8 @@ from pathlib import Path
 import joblib
 import numpy as np
 
-from scoring_service.features.lexical import extract_lexical_features
-from scoring_service.features.ngram import NgramFeatureExtractor
+from ai.scoring.features.lexical import extract_lexical_features
+from ai.scoring.features.ngram import NgramFeatureExtractor
 
 
 class BinaryModel:

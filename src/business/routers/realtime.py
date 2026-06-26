@@ -12,9 +12,9 @@ from contextlib import suppress
 import httpx
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from jose import JWTError, jwt
-from shared.config import get_settings
-from shared.constants import ES_INDEX_EVENTS
-from shared.observability import get_logger
+from common.config import get_settings
+from common.constants import ES_INDEX_EVENTS
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

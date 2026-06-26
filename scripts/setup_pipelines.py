@@ -51,7 +51,7 @@ PIPELINES = [
     config:
       extractors: [lexical, entropy]
   - id: dga_scoring
-    type: scoring_service
+    type: ai.scoring
     config:
       endpoint: "http://scoring-service:8001"
       protocol: http
@@ -116,7 +116,7 @@ connections:
       extractors: [entropy, lexical, ngram]
       window_size: 120s
   - id: c2_scoring
-    type: scoring_service
+    type: ai.scoring
     config:
       endpoint: "http://scoring-service:8001"
       protocol: http
@@ -172,7 +172,7 @@ connections:
       extractors: [entropy, lexical, ngram]
       window_size: 300s
   - id: tunnel_scoring
-    type: scoring_service
+    type: ai.scoring
     config:
       endpoint: "http://scoring-service:8001"
       protocol: http
@@ -227,7 +227,7 @@ connections:
     config:
       extractors: [lexical, entropy]
   - id: dga_scoring
-    type: scoring_service
+    type: ai.scoring
     config:
       endpoint: "http://scoring-service:8001"
       protocol: http
@@ -306,7 +306,7 @@ connections:
     config:
       extractors: [lexical, entropy]
   - id: dga_scoring
-    type: scoring_service
+    type: ai.scoring
     config:
       endpoint: "http://scoring-service:8001"
       protocol: http

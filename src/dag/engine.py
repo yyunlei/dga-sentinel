@@ -10,9 +10,9 @@ from uuid import uuid4
 
 from langgraph.graph import StateGraph, END
 
-from dag_engine.loader import PipelineDefinition
-from dag_engine.checkpoint import CheckpointManager
-from shared.observability import get_logger, ACTIVE_PIPELINES
+from dag.loader import PipelineDefinition
+from dag.checkpoint import CheckpointManager
+from common.observability import get_logger, ACTIVE_PIPELINES
 
 logger = get_logger(__name__)
 

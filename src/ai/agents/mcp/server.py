@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from shared.observability import get_logger
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 
@@ -43,16 +43,16 @@ class MCPServer:
 
     def register_defaults(self) -> None:
         """注册全部 10 个工具"""
-        from agent_layer.mcp.tools.es_query import ESQueryTool
-        from agent_layer.mcp.tools.model_info import ModelInfoTool
-        from agent_layer.mcp.tools.config_tool import ConfigTool
-        from agent_layer.mcp.tools.threat_intel import ThreatIntelTool
-        from agent_layer.mcp.tools.starrocks_query import StarRocksQueryTool
-        from agent_layer.mcp.tools.redis_query import RedisQueryTool
-        from agent_layer.mcp.tools.dns_resolve import DNSResolveTool
-        from agent_layer.mcp.tools.whois_lookup import WhoisLookupTool
-        from agent_layer.mcp.tools.geoip_lookup import GeoIPLookupTool
-        from agent_layer.mcp.tools.report_generate import ReportGenerateTool
+        from ai.agents.mcp.tools.es_query import ESQueryTool
+        from ai.agents.mcp.tools.model_info import ModelInfoTool
+        from ai.agents.mcp.tools.config_tool import ConfigTool
+        from ai.agents.mcp.tools.threat_intel import ThreatIntelTool
+        from ai.agents.mcp.tools.starrocks_query import StarRocksQueryTool
+        from ai.agents.mcp.tools.redis_query import RedisQueryTool
+        from ai.agents.mcp.tools.dns_resolve import DNSResolveTool
+        from ai.agents.mcp.tools.whois_lookup import WhoisLookupTool
+        from ai.agents.mcp.tools.geoip_lookup import GeoIPLookupTool
+        from ai.agents.mcp.tools.report_generate import ReportGenerateTool
 
         self.register_tool("es_query", ESQueryTool())
         self.register_tool("model_info", ModelInfoTool())
@@ -120,7 +120,7 @@ class MCPServer:
 
 def build_app() -> Any:
     """供 uvicorn 调用的工厂函数"""
-    from shared.observability import setup_logging
+    from common.observability import setup_logging
     setup_logging()
     server = MCPServer()
     server.register_defaults()

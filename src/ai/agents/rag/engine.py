@@ -5,9 +5,9 @@ from typing import Any
 
 from elasticsearch import AsyncElasticsearch
 
-from agent_layer.rag.embedding import ThreatEmbedding
-from shared.config import get_settings, has_valid_llm_key
-from shared.observability import get_logger
+from ai.agents.rag.embedding import ThreatEmbedding
+from common.config import get_settings, has_valid_llm_key
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

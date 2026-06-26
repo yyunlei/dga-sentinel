@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 from fastapi import Depends, HTTPException, Request
-from gateway.middleware.auth import verify_token
-from shared.observability import get_logger
+from business.middleware.auth import verify_token
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

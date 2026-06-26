@@ -8,7 +8,7 @@ import time
 from abc import ABC, abstractmethod
 from typing import Any
 
-from shared.observability import DAG_NODE_LATENCY, DAG_NODE_ERRORS, get_logger, get_tracer
+from common.observability import DAG_NODE_LATENCY, DAG_NODE_ERRORS, get_logger, get_tracer
 
 logger = get_logger(__name__)
 _tracer = get_tracer(__name__)

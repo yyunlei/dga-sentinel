@@ -7,8 +7,8 @@ from __future__ import annotations
 import asyncio
 from typing import Callable, Awaitable
 
-from agent_layer.a2a.protocol import A2AMessage
-from shared.observability import get_logger
+from ai.agents.a2a.protocol import A2AMessage
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

@@ -16,15 +16,15 @@ import httpx
 from elasticsearch import AsyncElasticsearch
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from shared.schemas import ScoreRequest, ScoreResponse, ScoreResult
-from shared.config import get_settings
-from shared.constants import ES_INDEX_EVENTS
-from shared.observability import SCORE_REQUESTS
-from gateway.middleware.rate_limit import rate_limit_check
-from gateway.middleware.auth import verify_token
-from gateway.middleware.rbac import require_analyst
-from gateway.db import get_es_client, get_redis_client
-from gateway.starrocks_client import write_events_to_starrocks
+from common.schemas import ScoreRequest, ScoreResponse, ScoreResult
+from common.config import get_settings
+from common.constants import ES_INDEX_EVENTS
+from common.observability import SCORE_REQUESTS
+from business.middleware.rate_limit import rate_limit_check
+from business.middleware.auth import verify_token
+from business.middleware.rbac import require_analyst
+from business.db import get_es_client, get_redis_client
+from business.starrocks_client import write_events_to_starrocks
 
 router = APIRouter()
 

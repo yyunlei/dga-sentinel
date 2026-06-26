@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import pytest
 
-from gateway.routers.alerts import _build_filter_query, _SEVERITY_PRIORITY
+from business.routers.alerts import _build_filter_query, _SEVERITY_PRIORITY
 
 
 # ---------------------------------------------------------------------------
@@ -14,7 +14,7 @@ from gateway.routers.alerts import _build_filter_query, _SEVERITY_PRIORITY
 # ---------------------------------------------------------------------------
 
 class TestBuildFilterQuery:
-    """Unit tests for the shared ES filter query builder."""
+    """Unit tests for the common ES filter query builder."""
 
     def test_no_filters_returns_match_all(self) -> None:
         result = _build_filter_query()

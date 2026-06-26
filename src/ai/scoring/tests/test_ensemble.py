@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import MagicMock
 
 joblib = pytest.importorskip("joblib")
-from scoring_service.models.ensemble import EnsembleScorer, ScoringResult
+from ai.scoring.models.ensemble import EnsembleScorer, ScoringResult
 
 
 class TestEnsembleScorer:

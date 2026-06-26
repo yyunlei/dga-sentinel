@@ -12,13 +12,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from starlette.responses import Response
 
-from shared.config import get_settings
-from shared.observability import setup_logging, get_logger
-from gateway.middleware.tracing import TracingMiddleware
-from gateway.middleware.security import SecurityHeadersMiddleware
-from gateway.middleware.audit import AuditMiddleware
-from gateway.db import init_db, close_db
-from gateway.routers import score, health, alerts, models, dag, explain, feedback, realtime, query, node_configs, agents, dashboard, reports, rag, operations
+from common.config import get_settings
+from common.observability import setup_logging, get_logger
+from business.middleware.tracing import TracingMiddleware
+from business.middleware.security import SecurityHeadersMiddleware
+from business.middleware.audit import AuditMiddleware
+from business.db import init_db, close_db
+from business.routers import score, health, alerts, models, dag, explain, feedback, realtime, query, node_configs, agents, dashboard, reports, rag, operations
 
 logger = get_logger(__name__)
 
@@ -28,7 +28,7 @@ def _instrument_otel(app: FastAPI, settings) -> None:
     if not settings.otel_endpoint:
         return
     try:
-        from shared.observability import setup_tracing
+        from common.observability import setup_tracing
         setup_tracing("gateway", settings.otel_endpoint)
         from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
         FastAPIInstrumentor.instrument_app(app)
@@ -88,7 +88,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 # 审计日志中间件
 app.add_middleware(AuditMiddleware)
 
-# 注册路由（前缀 /api，与 nginx 转发 /api/ 到 gateway 时保留路径一致）
+# 注册路由（前缀 /api，与 nginx 转发 /api/ 到 business 时保留路径一致）
 app.include_router(score.router, prefix="/api", tags=["Scoring"])
 app.include_router(explain.router, prefix="/api", tags=["Explain"])
 app.include_router(alerts.router, prefix="/api", tags=["Alerts"])

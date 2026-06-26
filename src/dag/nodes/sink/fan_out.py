@@ -4,8 +4,8 @@ from __future__ import annotations
 import asyncio
 from typing import Any
 
-from dag_engine.nodes.base import BaseNode
-from shared.observability import get_logger
+from dag.nodes.base import BaseNode
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

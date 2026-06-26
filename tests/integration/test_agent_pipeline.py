@@ -12,8 +12,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from agent_layer.a2a.bus import AgentBus
-from agent_layer.a2a.protocol import A2AMessage
+from ai.agents.a2a.bus import AgentBus
+from ai.agents.a2a.protocol import A2AMessage
 
 
 # ── Fixtures ──────────────────────────────────────────────
@@ -57,7 +57,7 @@ def mock_threat_intel_tool():
         "sources": ["alienvault"],
     })
     # Make isinstance check work
-    from agent_layer.mcp.tools.threat_intel import ThreatIntelTool
+    from ai.agents.mcp.tools.threat_intel import ThreatIntelTool
     tool.__class__ = ThreatIntelTool
     return tool
 
@@ -69,7 +69,7 @@ class TestTriageAgent:
     @patch("agent_layer.agents.triage_agent.ESQueryTool")
     def test_triage_instantiation(self, mock_es_cls, mock_bus, mock_es_tool):
         mock_es_cls.return_value = mock_es_tool
-        from agent_layer.agents.triage_agent import TriageAgent
+        from ai.agents.agents.triage_agent import TriageAgent
         agent = TriageAgent(bus=mock_bus)
         assert agent.name == "triage"
         assert agent.bus is mock_bus
@@ -77,7 +77,7 @@ class TestTriageAgent:
     @patch("agent_layer.agents.triage_agent.ESQueryTool")
     async def test_triage_perceive_extracts_context(self, mock_es_cls, mock_bus, mock_es_tool):
         mock_es_cls.return_value = mock_es_tool
-        from agent_layer.agents.triage_agent import TriageAgent
+        from ai.agents.agents.triage_agent import TriageAgent
         agent = TriageAgent(bus=mock_bus)
         state = {"input_data": SAMPLE_ALERT}
         result = await agent.perceive(state)
@@ -87,7 +87,7 @@ class TestTriageAgent:
     @patch("agent_layer.agents.triage_agent.ESQueryTool")
     async def test_triage_reflect_critical_severity(self, mock_es_cls, mock_bus, mock_es_tool):
         mock_es_cls.return_value = mock_es_tool
-        from agent_layer.agents.triage_agent import TriageAgent
+        from ai.agents.agents.triage_agent import TriageAgent
         agent = TriageAgent(bus=mock_bus)
         state = {
             "context": {"score": 0.96, "src_ip": "192.168.1.100"},
@@ -105,7 +105,7 @@ class TestExplainAgent:
     @patch("agent_layer.agents.explain_agent.get_settings")
     async def test_explain_perceive(self, mock_settings, mock_bus):
         mock_settings.return_value = MagicMock(deepseek_api_key="")
-        from agent_layer.agents.explain_agent import ExplainAgent
+        from ai.agents.agents.explain_agent import ExplainAgent
         agent = ExplainAgent(bus=mock_bus)
         state = {"input_data": SAMPLE_ALERT}
         result = await agent.perceive(state)
@@ -115,7 +115,7 @@ class TestExplainAgent:
     @patch("agent_layer.agents.explain_agent.get_settings")
     async def test_explain_plan_has_four_dimensions(self, mock_settings, mock_bus):
         mock_settings.return_value = MagicMock(deepseek_api_key="")
-        from agent_layer.agents.explain_agent import ExplainAgent
+        from ai.agents.agents.explain_agent import ExplainAgent
         agent = ExplainAgent(bus=mock_bus)
         state = {"input_data": SAMPLE_ALERT}
         result = await agent.plan(state)
@@ -129,12 +129,12 @@ class TestThreatIntelAgent:
     @patch("agent_layer.agents.threat_intel_agent.ThreatIntelTool")
     def test_threat_intel_instantiation(self, mock_tool_cls, mock_bus, mock_threat_intel_tool):
         mock_tool_cls.return_value = mock_threat_intel_tool
-        from agent_layer.agents.threat_intel_agent import ThreatIntelAgent
+        from ai.agents.agents.threat_intel_agent import ThreatIntelAgent
         agent = ThreatIntelAgent(bus=mock_bus)
         assert agent.name == "threat_intel"
 
     async def test_threat_intel_perceive_extracts_domain_ip(self, mock_bus):
-        from agent_layer.agents.threat_intel_agent import ThreatIntelAgent
+        from ai.agents.agents.threat_intel_agent import ThreatIntelAgent
         agent = ThreatIntelAgent.__new__(ThreatIntelAgent)
         agent.bus = mock_bus
         agent.tools = []
@@ -149,12 +149,12 @@ class TestThreatIntelAgent:
 class TestResponseAgent:
 
     def test_response_instantiation(self, mock_bus):
-        from agent_layer.agents.response_agent import ResponseAgent
+        from ai.agents.agents.response_agent import ResponseAgent
         agent = ResponseAgent(bus=mock_bus)
         assert agent.name == "response"
 
     async def test_response_plan_critical(self, mock_bus):
-        from agent_layer.agents.response_agent import ResponseAgent
+        from ai.agents.agents.response_agent import ResponseAgent
         agent = ResponseAgent(bus=mock_bus)
         state = {"context": {"severity": "CRITICAL", "domain": "evil.com", "src_ip": "1.2.3.4"}}
         result = await agent.plan(state)
@@ -164,7 +164,7 @@ class TestResponseAgent:
         assert "log_event" in result["plan"]
 
     async def test_response_plan_low(self, mock_bus):
-        from agent_layer.agents.response_agent import ResponseAgent
+        from ai.agents.agents.response_agent import ResponseAgent
         agent = ResponseAgent(bus=mock_bus)
         state = {"context": {"severity": "LOW", "domain": "ok.com", "src_ip": "10.0.0.1"}}
         result = await agent.plan(state)
@@ -180,7 +180,7 @@ class TestFullPipeline:
     async def test_triage_sends_a2a_on_critical(self, mock_es_cls, mock_bus, mock_es_tool):
         """TriageAgent should send A2A messages to threat_intel and explain for CRITICAL alerts."""
         mock_es_cls.return_value = mock_es_tool
-        from agent_layer.agents.triage_agent import TriageAgent
+        from ai.agents.agents.triage_agent import TriageAgent
         agent = TriageAgent(bus=mock_bus)
 
         # Manually walk through lifecycle to avoid LLM calls
@@ -202,7 +202,7 @@ class TestFullPipeline:
 
     async def test_response_generates_actions_for_critical(self, mock_bus):
         """ResponseAgent should generate 4 actions for CRITICAL severity."""
-        from agent_layer.agents.response_agent import ResponseAgent
+        from ai.agents.agents.response_agent import ResponseAgent
         agent = ResponseAgent(bus=mock_bus)
 
         state = {

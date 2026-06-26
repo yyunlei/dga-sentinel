@@ -1,9 +1,9 @@
 """Text2SQL Engine — 自然语言转 SQL 查询"""
 from __future__ import annotations
 import re
-from shared.config import get_settings
-from shared.observability import get_logger
-from agent_layer.text2sql.schema_registry import get_schema_context, get_allowed_tables
+from common.config import get_settings
+from common.observability import get_logger
+from ai.agents.text2sql.schema_registry import get_schema_context, get_allowed_tables
 
 logger = get_logger(__name__)
 

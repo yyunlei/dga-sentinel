@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from agent_layer.base_agent import BaseAgent, AgentState
-from agent_layer.a2a.bus import AgentBus
-from shared.observability import get_logger
+from ai.agents.base_agent import BaseAgent, AgentState
+from ai.agents.a2a.bus import AgentBus
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 
@@ -68,11 +68,11 @@ class ResponseAgent(BaseAgent):
 
     async def _get_sop_context(self, severity: str, family: str) -> str:
         """查询 RAG 知识库获取 SOC SOP 处置规则（无有效 key 时跳过）。"""
-        from shared.config import has_valid_llm_key
+        from common.config import has_valid_llm_key
         if not has_valid_llm_key():
             return ""
         try:
-            from agent_layer.rag.engine import ThreatKnowledgeRAG
+            from ai.agents.rag.engine import ThreatKnowledgeRAG
             rag = ThreatKnowledgeRAG.get_instance()
             result = await rag.query(
                 f"SOC SOP {severity} {family} 处置规则", top_k=3,

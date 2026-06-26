@@ -10,11 +10,11 @@ from typing import Any
 
 import redis.asyncio as aioredis
 
-from agent_layer.base_agent import BaseAgent, AgentState
-from agent_layer.a2a.bus import AgentBus
-from agent_layer.mcp.tools.threat_intel import ThreatIntelTool
-from shared.config import get_settings
-from shared.observability import get_logger
+from ai.agents.base_agent import BaseAgent, AgentState
+from ai.agents.a2a.bus import AgentBus
+from ai.agents.mcp.tools.threat_intel import ThreatIntelTool
+from common.config import get_settings
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

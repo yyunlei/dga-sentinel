@@ -10,10 +10,10 @@ import os
 from pathlib import Path
 from typing import Any
 
-from dag_engine.engine import DAGEngine
-from dag_engine.loader import PipelineDefinition, load_pipeline
-from dag_engine.checkpoint import CheckpointManager
-from shared.observability import get_logger, ACTIVE_PIPELINES
+from dag.engine import DAGEngine
+from dag.loader import PipelineDefinition, load_pipeline
+from dag.checkpoint import CheckpointManager
+from common.observability import get_logger, ACTIVE_PIPELINES
 
 logger = get_logger(__name__)
 
@@ -151,7 +151,7 @@ class BatchRuntime:
 
 if __name__ == "__main__":
     import os
-    from shared.observability import setup_logging
+    from common.observability import setup_logging
 
     setup_logging()
 

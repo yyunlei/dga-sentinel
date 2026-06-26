@@ -9,11 +9,11 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from gateway.db import get_pg_pool
-from gateway.middleware.rate_limit import rate_limit_check
-from gateway.middleware.auth import verify_token
-from gateway.middleware.rbac import require_analyst
-from shared.observability import get_logger
+from business.db import get_pg_pool
+from business.middleware.rate_limit import rate_limit_check
+from business.middleware.auth import verify_token
+from business.middleware.rbac import require_analyst
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

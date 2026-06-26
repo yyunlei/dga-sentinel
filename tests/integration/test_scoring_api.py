@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 
 fastapi = pytest.importorskip("fastapi")
 
-# Pre-mock heavy ML dependencies before any scoring_service imports
+# Pre-mock heavy ML dependencies before any ai.scoring imports
 _tf_mock = MagicMock()
 _MOCK_MODULES = {
     "tensorflow": _tf_mock,
@@ -36,7 +36,7 @@ class TestScoringAPI:
 
     def test_healthz(self):
         """健康检查端点"""
-        from scoring_service.main import app
+        from ai.scoring.main import app
         from fastapi.testclient import TestClient
 
         with patch("scoring_service.main._scorer", MagicMock()):
@@ -47,7 +47,7 @@ class TestScoringAPI:
 
     def test_readyz_not_ready(self):
         """就绪检查 — 模型未加载"""
-        from scoring_service.main import app
+        from ai.scoring.main import app
         from fastapi.testclient import TestClient
 
         with patch("scoring_service.main._scorer", None):
@@ -57,7 +57,7 @@ class TestScoringAPI:
 
     def test_metrics(self):
         """Prometheus 指标端点"""
-        from scoring_service.main import app
+        from ai.scoring.main import app
         from fastapi.testclient import TestClient
 
         with patch("scoring_service.main._scorer", MagicMock()):

@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 class TestDNSParserNode:
     def test_parse_dict_input(self):
-        from dag_engine.nodes.transform.dns_parser import DNSParserNode
+        from dag.nodes.transform.dns_parser import DNSParserNode
         node = DNSParserNode(node_id="parser-1", config={}, pipeline_id="test")
         state = {
             "raw_data": {
@@ -23,7 +23,7 @@ class TestDNSParserNode:
         assert "parsed" in result
 
     def test_parse_string_input(self):
-        from dag_engine.nodes.transform.dns_parser import DNSParserNode
+        from dag.nodes.transform.dns_parser import DNSParserNode
         node = DNSParserNode(node_id="parser-2", config={}, pipeline_id="test")
         # DNSParserNode splits strings by whitespace: "query_name query_type src_ip timestamp"
         state = {"raw_data": "test.com A 192.168.1.1 2026-02-11T00:00:00Z"}
@@ -34,7 +34,7 @@ class TestDNSParserNode:
 
 class TestWhitelistNode:
     def test_whitelisted_domain(self):
-        from dag_engine.nodes.filter.whitelist import WhitelistNode
+        from dag.nodes.filter.whitelist import WhitelistNode
         node = WhitelistNode(
             node_id="wl-1",
             config={"static": ["google.com", "microsoft.com"]},
@@ -46,7 +46,7 @@ class TestWhitelistNode:
         assert result["score"] == 0.0
 
     def test_non_whitelisted_domain(self):
-        from dag_engine.nodes.filter.whitelist import WhitelistNode
+        from dag.nodes.filter.whitelist import WhitelistNode
         node = WhitelistNode(
             node_id="wl-2",
             config={"static": ["google.com"]},
@@ -60,7 +60,7 @@ class TestWhitelistNode:
 
 class TestThresholdNode:
     def test_above_threshold(self):
-        from dag_engine.nodes.filter.threshold import ThresholdNode
+        from dag.nodes.filter.threshold import ThresholdNode
         node = ThresholdNode(
             node_id="th-1",
             config={"default": 0.7},
@@ -72,7 +72,7 @@ class TestThresholdNode:
         assert result["severity"] == "MEDIUM"
 
     def test_critical_severity(self):
-        from dag_engine.nodes.filter.threshold import ThresholdNode
+        from dag.nodes.filter.threshold import ThresholdNode
         node = ThresholdNode(
             node_id="th-2",
             config={"default": 0.7},
@@ -84,7 +84,7 @@ class TestThresholdNode:
         assert result["severity"] == "CRITICAL"
 
     def test_below_threshold(self):
-        from dag_engine.nodes.filter.threshold import ThresholdNode
+        from dag.nodes.filter.threshold import ThresholdNode
         node = ThresholdNode(
             node_id="th-3",
             config={"default": 0.7},
@@ -98,7 +98,7 @@ class TestThresholdNode:
 
 class TestCheckpointManager:
     def test_save_and_get_offset(self):
-        from dag_engine.checkpoint import CheckpointManager
+        from dag.checkpoint import CheckpointManager
         mock_redis = AsyncMock()
         mock_redis.set = AsyncMock()
         mock_redis.get = AsyncMock(return_value="100")
@@ -109,7 +109,7 @@ class TestCheckpointManager:
         assert offset == 100
 
     def test_mark_and_check_processed(self):
-        from dag_engine.checkpoint import CheckpointManager
+        from dag.checkpoint import CheckpointManager
         mock_redis = AsyncMock()
         mock_redis.set = AsyncMock()
         mock_redis.exists = AsyncMock(return_value=1)
@@ -119,7 +119,7 @@ class TestCheckpointManager:
         assert result is True
 
     def test_not_processed(self):
-        from dag_engine.checkpoint import CheckpointManager
+        from dag.checkpoint import CheckpointManager
         mock_redis = AsyncMock()
         mock_redis.exists = AsyncMock(return_value=0)
         mgr = CheckpointManager(redis_client=mock_redis, key_prefix="ckpt:")

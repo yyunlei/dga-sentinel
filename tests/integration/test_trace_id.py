@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from jose import jwt
 
-from shared.config import get_settings
+from common.config import get_settings
 
 settings = get_settings()
 
@@ -35,10 +35,10 @@ def _patch_lifespan():
         yield
 
     with patch("gateway.main.lifespan", _noop_lifespan):
-        import importlib, gateway.main  # noqa: E401
-        importlib.reload(gateway.main)
-        yield gateway.main.app
-        importlib.reload(gateway.main)
+        import importlib, business.main  # noqa: E401
+        importlib.reload(business.main)
+        yield business.main.app
+        importlib.reload(business.main)
 
 
 @pytest.fixture()
@@ -48,7 +48,7 @@ def client(_patch_lifespan):
 
 
 class TestTraceIdPropagation:
-    """Verify trace_id generation and propagation through the gateway."""
+    """Verify trace_id generation and propagation through the business."""
 
     def test_gateway_generates_trace_id(self, client):
         """Response should contain X-Trace-ID header."""
@@ -86,7 +86,7 @@ class TestTraceIdPropagation:
     @patch("gateway.routers.score.get_es_client", return_value=None)
     @patch("httpx.AsyncClient.post")
     def test_trace_id_passed_to_scoring_service(self, mock_post, _es, _redis, _sr, client):
-        """When gateway calls scoring service, trace_id should be propagated."""
+        """When business calls scoring service, trace_id should be propagated."""
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.raise_for_status = MagicMock()
@@ -101,7 +101,7 @@ class TestTraceIdPropagation:
         assert mock_post.called
 
     def test_custom_trace_id_header_respected(self, client):
-        """If X-Trace-ID is provided in request, gateway should use it."""
+        """If X-Trace-ID is provided in request, business should use it."""
         custom_trace = "a" * 32
         resp = client.get("/health", headers={"X-Trace-ID": custom_trace})
         returned_trace = resp.headers.get("X-Trace-ID", "")

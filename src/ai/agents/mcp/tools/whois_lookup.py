@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import re
 
-from shared.observability import get_logger
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

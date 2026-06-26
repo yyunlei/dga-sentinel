@@ -11,9 +11,9 @@ from typing import Any
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from agent_layer.a2a.bus import AgentBus
-from agent_layer.base_agent import BaseAgent, AgentState
-from shared.observability import get_logger
+from ai.agents.a2a.bus import AgentBus
+from ai.agents.base_agent import BaseAgent, AgentState
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

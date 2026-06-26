@@ -6,11 +6,11 @@
 
 from __future__ import annotations
 
-from agent_layer.base_agent import BaseAgent, AgentState
-from agent_layer.a2a.bus import AgentBus
-from agent_layer.a2a.protocol import A2AMessage
-from agent_layer.mcp.tools.es_query import ESQueryTool
-from shared.observability import get_logger
+from ai.agents.base_agent import BaseAgent, AgentState
+from ai.agents.a2a.bus import AgentBus
+from ai.agents.a2a.protocol import A2AMessage
+from ai.agents.mcp.tools.es_query import ESQueryTool
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 
@@ -87,15 +87,15 @@ class TriageAgent(BaseAgent):
     async def _try_llm_tool_call(self, ctx: dict) -> dict | None:
         """尝试通过 LLM bind_tools 自主调用 es_query"""
         try:
-            from shared.config import get_settings, has_valid_llm_key
+            from common.config import get_settings, has_valid_llm_key
             if not has_valid_llm_key():
                 return None
             settings = get_settings()
 
             from langchain_openai import ChatOpenAI
             from langchain_core.messages import HumanMessage, ToolMessage
-            from agent_layer.mcp.server import MCPServer
-            from agent_layer.fc_bridge import MCPFunctionCallingBridge
+            from ai.agents.mcp.server import MCPServer
+            from ai.agents.fc_bridge import MCPFunctionCallingBridge
 
             server = MCPServer()
             server.register_defaults()

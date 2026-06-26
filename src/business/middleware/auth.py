@@ -6,8 +6,8 @@ from fastapi import HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 
-from shared.config import get_settings
-from shared.observability import AUTH_FAILURES
+from common.config import get_settings
+from common.observability import AUTH_FAILURES
 
 security = HTTPBearer(auto_error=False)
 

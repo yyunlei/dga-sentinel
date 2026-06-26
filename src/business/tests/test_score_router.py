@@ -1,11 +1,11 @@
 """
-gateway/routers/score.py 域名校验单元测试
+business/routers/score.py 域名校验单元测试
 """
 
 import pytest
 from fastapi import HTTPException
 
-from gateway.routers.score import _validate_domains
+from business.routers.score import _validate_domains
 
 
 def test_valid_domains():

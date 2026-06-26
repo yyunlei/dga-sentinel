@@ -1,8 +1,8 @@
 """评分服务单元测试"""
 
 import pytest
-from scoring_service.features.lexical import extract_lexical_features, count_char_features
-from scoring_service.features.entropy import shannon_entropy, extract_entropy_features
+from ai.scoring.features.lexical import extract_lexical_features, count_char_features
+from ai.scoring.features.entropy import shannon_entropy, extract_entropy_features
 
 
 class TestLexicalFeatures:
@@ -60,7 +60,7 @@ class TestNgramFeatures:
     def test_matrix_stats_keys(self):
         """_matrix_stats returns 7 statistical keys with correct prefix"""
         sparse = pytest.importorskip("scipy.sparse")
-        from scoring_service.features.ngram import NgramFeatureExtractor
+        from ai.scoring.features.ngram import NgramFeatureExtractor
         matrix = sparse.csr_matrix(np.array([[1, 2, 3, 4, 5]]))
         result = NgramFeatureExtractor._matrix_stats(matrix, "test")
         expected_keys = {"test_mean", "test_std", "test_min", "test_max", "test_median", "test_skew", "test_kurtosis"}
@@ -68,7 +68,7 @@ class TestNgramFeatures:
 
     def test_extract_returns_21_features(self):
         sparse = pytest.importorskip("scipy.sparse")
-        from scoring_service.features.ngram import NgramFeatureExtractor
+        from ai.scoring.features.ngram import NgramFeatureExtractor
         with patch.object(NgramFeatureExtractor, "__init__", return_value=None):
             extractor = NgramFeatureExtractor()
             mock_vec = MagicMock()
@@ -87,18 +87,18 @@ from unittest.mock import AsyncMock
 
 class TestNXDomainFeatures:
     def test_extract_features(self):
-        from scoring_service.features.nxdomain import NXDomainTracker
+        from ai.scoring.features.nxdomain import NXDomainTracker
         tracker = NXDomainTracker(redis_client=None)
         result = tracker.extract_features(0.5)
         assert result == {"nxdomain_ratio": 0.5}
 
     def test_extract_features_zero(self):
-        from scoring_service.features.nxdomain import NXDomainTracker
+        from ai.scoring.features.nxdomain import NXDomainTracker
         tracker = NXDomainTracker(redis_client=None)
         assert tracker.extract_features(0.0) == {"nxdomain_ratio": 0.0}
 
     def test_get_ratio_with_data(self):
-        from scoring_service.features.nxdomain import NXDomainTracker
+        from ai.scoring.features.nxdomain import NXDomainTracker
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(side_effect=lambda k: "10" if "total" in k else "3")
         tracker = NXDomainTracker(redis_client=mock_redis)
@@ -106,7 +106,7 @@ class TestNXDomainFeatures:
         assert abs(ratio - 0.3) < 0.01
 
     def test_get_ratio_no_data(self):
-        from scoring_service.features.nxdomain import NXDomainTracker
+        from ai.scoring.features.nxdomain import NXDomainTracker
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(return_value=None)
         tracker = NXDomainTracker(redis_client=mock_redis)

@@ -9,9 +9,9 @@ import json
 
 import pytest
 
-from agent_layer.a2a.protocol import A2AMessage
-from agent_layer.a2a.bus import AgentBus
-from agent_layer.base_agent import BaseAgent, AgentState
+from ai.agents.a2a.protocol import A2AMessage
+from ai.agents.a2a.bus import AgentBus
+from ai.agents.base_agent import BaseAgent, AgentState
 
 
 # --- Concrete test agent ---
@@ -128,16 +128,16 @@ class TestMCPToolSchemas:
 
     @classmethod
     def setup_class(cls):
-        from agent_layer.mcp.tools.es_query import ESQueryTool
-        from agent_layer.mcp.tools.threat_intel import ThreatIntelTool
-        from agent_layer.mcp.tools.model_info import ModelInfoTool
-        from agent_layer.mcp.tools.config_tool import ConfigTool
-        from agent_layer.mcp.tools.starrocks_query import StarRocksQueryTool
-        from agent_layer.mcp.tools.redis_query import RedisQueryTool
-        from agent_layer.mcp.tools.dns_resolve import DNSResolveTool
-        from agent_layer.mcp.tools.whois_lookup import WhoisLookupTool
-        from agent_layer.mcp.tools.geoip_lookup import GeoIPLookupTool
-        from agent_layer.mcp.tools.report_generate import ReportGenerateTool
+        from ai.agents.mcp.tools.es_query import ESQueryTool
+        from ai.agents.mcp.tools.threat_intel import ThreatIntelTool
+        from ai.agents.mcp.tools.model_info import ModelInfoTool
+        from ai.agents.mcp.tools.config_tool import ConfigTool
+        from ai.agents.mcp.tools.starrocks_query import StarRocksQueryTool
+        from ai.agents.mcp.tools.redis_query import RedisQueryTool
+        from ai.agents.mcp.tools.dns_resolve import DNSResolveTool
+        from ai.agents.mcp.tools.whois_lookup import WhoisLookupTool
+        from ai.agents.mcp.tools.geoip_lookup import GeoIPLookupTool
+        from ai.agents.mcp.tools.report_generate import ReportGenerateTool
 
         cls.TOOL_CLASSES = [
             ESQueryTool, ThreatIntelTool, ModelInfoTool, ConfigTool,
@@ -184,13 +184,13 @@ class TestMCPToolSchemas:
 
 class TestMCPServer:
     def test_server_registers_all_tools(self):
-        from agent_layer.mcp.server import MCPServer
+        from ai.agents.mcp.server import MCPServer
         server = MCPServer()
         server.register_defaults()
         assert len(server.list_tools()) == 10
 
     def test_server_get_schema(self):
-        from agent_layer.mcp.server import MCPServer
+        from ai.agents.mcp.server import MCPServer
         server = MCPServer()
         server.register_defaults()
         schema = server.get_tool_schema("es_query")
@@ -199,7 +199,7 @@ class TestMCPServer:
         assert "input_schema" in schema
 
     def test_server_unknown_tool(self):
-        from agent_layer.mcp.server import MCPServer
+        from ai.agents.mcp.server import MCPServer
         server = MCPServer()
         assert server.get_tool_schema("nonexistent") is None
 
@@ -208,7 +208,7 @@ class TestMCPServer:
 
 class TestOrchestrator:
     def test_register_and_list(self):
-        from agent_layer.orchestrator import AgentOrchestrator
+        from ai.agents.orchestrator import AgentOrchestrator
         bus = AgentBus()
         orch = AgentOrchestrator(bus)
         agent = DummyAgent(bus=bus)
@@ -217,7 +217,7 @@ class TestOrchestrator:
 
     @pytest.mark.asyncio
     async def test_dispatch(self):
-        from agent_layer.orchestrator import AgentOrchestrator
+        from ai.agents.orchestrator import AgentOrchestrator
         bus = AgentBus()
         orch = AgentOrchestrator(bus)
         orch.register(DummyAgent(bus=bus))
@@ -226,7 +226,7 @@ class TestOrchestrator:
 
     @pytest.mark.asyncio
     async def test_dispatch_unknown_agent(self):
-        from agent_layer.orchestrator import AgentOrchestrator
+        from ai.agents.orchestrator import AgentOrchestrator
         bus = AgentBus()
         orch = AgentOrchestrator(bus)
         with pytest.raises(KeyError):

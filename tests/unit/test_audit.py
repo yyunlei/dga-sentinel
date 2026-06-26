@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
 
-from gateway.middleware.audit import AuditMiddleware
+from business.middleware.audit import AuditMiddleware
 
 
 class TestAuditMiddleware:

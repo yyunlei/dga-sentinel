@@ -10,7 +10,7 @@ from collections import defaultdict
 
 from fastapi import HTTPException, Request
 
-from shared.observability import RATE_LIMIT_REJECTED
+from common.observability import RATE_LIMIT_REJECTED
 
 
 class InMemoryRateLimiter:
@@ -74,7 +74,7 @@ _limiter: InMemoryRateLimiter | RedisRateLimiter | None = None
 def get_limiter() -> InMemoryRateLimiter | RedisRateLimiter:
     global _limiter
     if _limiter is None:
-        from shared.config import get_settings
+        from common.config import get_settings
         settings = get_settings()
         if settings.is_dev:
             _limiter = InMemoryRateLimiter(settings.rate_limit_per_minute)

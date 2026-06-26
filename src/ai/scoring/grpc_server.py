@@ -9,9 +9,9 @@ from concurrent import futures
 
 import grpc
 
-from shared.config import get_settings
-from shared.observability import get_logger, SCORE_REQUESTS, SCORE_LATENCY, DGA_HITS
-from scoring_service.proto import scoring_pb2, scoring_pb2_grpc
+from common.config import get_settings
+from common.observability import get_logger, SCORE_REQUESTS, SCORE_LATENCY, DGA_HITS
+from ai.scoring.proto import scoring_pb2, scoring_pb2_grpc
 
 logger = get_logger(__name__)
 

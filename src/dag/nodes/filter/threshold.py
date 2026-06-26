@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from dag_engine.nodes.base import BaseNode
-from shared.constants import DEFAULT_DGA_THRESHOLD
+from dag.nodes.base import BaseNode
+from common.constants import DEFAULT_DGA_THRESHOLD
 
 
 class ThresholdNode(BaseNode):

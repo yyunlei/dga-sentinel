@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 
-from shared.observability import get_logger
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

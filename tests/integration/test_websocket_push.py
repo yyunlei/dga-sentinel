@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from starlette.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
-from gateway.routers.realtime import router, _clients, _kafka_consumer_loop
+from business.routers.realtime import router, _clients, _kafka_consumer_loop
 
 
 @pytest.fixture

@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from dag_engine.nodes.base import BaseNode, logger
+from dag.nodes.base import BaseNode, logger
 
 
 class KafkaSinkNode(BaseNode):

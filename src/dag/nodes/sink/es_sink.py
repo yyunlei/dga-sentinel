@@ -7,7 +7,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from dag_engine.nodes.base import BaseNode, logger
+from dag.nodes.base import BaseNode, logger
 
 
 class ESSinkNode(BaseNode):

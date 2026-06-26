@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from dag_engine.nodes.base import BaseNode
+from dag.nodes.base import BaseNode
 
 
 class KafkaConsumerNode(BaseNode):

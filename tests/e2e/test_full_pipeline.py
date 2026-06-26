@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from jose import jwt
 
-from shared.config import get_settings
+from common.config import get_settings
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -41,7 +41,7 @@ _MOCK_SCORE_RESP = {
 
 @pytest.fixture()
 def _patch_lifespan():
-    """Bypass gateway lifespan (DB connections) and inject mock clients."""
+    """Bypass business lifespan (DB connections) and inject mock clients."""
     from contextlib import asynccontextmanager
     from fastapi import FastAPI
 
@@ -54,10 +54,10 @@ def _patch_lifespan():
 
     with patch("gateway.main.lifespan", _noop_lifespan):
         # Re-import to pick up patched lifespan
-        import importlib, gateway.main  # noqa: E401
-        importlib.reload(gateway.main)
-        yield gateway.main.app
-        importlib.reload(gateway.main)
+        import importlib, business.main  # noqa: E401
+        importlib.reload(business.main)
+        yield business.main.app
+        importlib.reload(business.main)
 
 
 @pytest.fixture()
@@ -117,7 +117,7 @@ class TestFullPipeline:
     def test_cache_hit_skips_scoring_service(self, mock_post, _sr, _patch_lifespan):
         """Cached domain should be returned without calling scoring service."""
         from fastapi.testclient import TestClient
-        from gateway.db import get_es_client, get_redis_client
+        from business.db import get_es_client, get_redis_client
 
         cached_result = {
             "domain": "cached.xyz",

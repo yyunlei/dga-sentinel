@@ -9,10 +9,10 @@ import asyncio
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from gateway.middleware.rbac import require_viewer
-from shared.config import get_settings
-from shared.constants import ES_INDEX_EVENTS
-from shared.observability import get_logger
+from business.middleware.rbac import require_viewer
+from common.config import get_settings
+from common.constants import ES_INDEX_EVENTS
+from common.observability import get_logger
 
 router = APIRouter()
 logger = get_logger(__name__)

@@ -11,8 +11,8 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from gateway.db import get_pg_pool
-from gateway.middleware.rbac import require_admin, require_viewer
+from business.db import get_pg_pool
+from business.middleware.rbac import require_admin, require_viewer
 
 router = APIRouter()
 

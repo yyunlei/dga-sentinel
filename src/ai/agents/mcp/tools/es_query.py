@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from elasticsearch import AsyncElasticsearch
-from shared.config import get_settings
-from shared.observability import get_logger
+from common.config import get_settings
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

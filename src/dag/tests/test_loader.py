@@ -15,7 +15,7 @@ class TestPipelineLoader:
         return f.name
 
     def test_load_valid_pipeline(self):
-        from dag_engine.loader import load_pipeline
+        from dag.loader import load_pipeline
         config = {
             "pipeline": {"name": "test-pipe", "mode": "stream", "version": "1.0"},
             "nodes": [
@@ -29,7 +29,7 @@ class TestPipelineLoader:
         assert len(pipe.nodes) == 1
 
     def test_load_unknown_node_type(self):
-        from dag_engine.loader import load_pipeline
+        from dag.loader import load_pipeline
         config = {
             "pipeline": {"name": "test", "mode": "batch"},
             "nodes": [
@@ -41,7 +41,7 @@ class TestPipelineLoader:
         assert len(pipe.nodes) == 0  # unknown type skipped
 
     def test_load_multi_sink_expansion(self):
-        from dag_engine.loader import load_pipeline
+        from dag.loader import load_pipeline
         config = {
             "pipeline": {"name": "test", "mode": "stream"},
             "nodes": [

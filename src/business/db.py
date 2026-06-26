@@ -9,8 +9,8 @@ import asyncpg
 from elasticsearch import AsyncElasticsearch
 import redis.asyncio as aioredis
 
-from shared.config import get_settings
-from shared.observability import get_logger
+from common.config import get_settings
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

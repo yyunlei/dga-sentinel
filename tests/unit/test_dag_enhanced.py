@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from dag_engine.nodes.base import BaseNode
-from dag_engine.nodes.sink.fan_out import FanOutNode
-from dag_engine.loader import NODE_REGISTRY
-from scoring_service.models.registry import ModelRegistry, ModelEntry
+from dag.nodes.base import BaseNode
+from dag.nodes.sink.fan_out import FanOutNode
+from dag.loader import NODE_REGISTRY
+from ai.scoring.models.registry import ModelRegistry, ModelEntry
 
 
 # ---------------------------------------------------------------------------
@@ -215,17 +215,17 @@ def pipeline_app():
     os.environ["JWT_SECRET"] = "test-secret-for-unit-tests-only"
     os.environ["GRAFANA_ADMIN_PASSWORD"] = "test-grafana-pw"
     os.environ["REDIS_URL"] = "redis://localhost:6379/0"
-    from shared.config import get_settings
+    from common.config import get_settings
     get_settings.cache_clear()
-    from gateway.middleware import rate_limit
+    from business.middleware import rate_limit
     rate_limit._limiter = None
-    from gateway.main import app
+    from business.main import app
     return app
 
 
 @pytest.fixture
 def admin_token():
-    from shared.config import get_settings
+    from common.config import get_settings
     s = get_settings()
     return jwt.encode(
         {"sub": "test-admin", "tenant_id": "default", "role": "admin"},
@@ -258,7 +258,7 @@ class TestPipelineCRUD:
 
     def test_list_pipelines_fallback(self, pipeline_app, admin_token):
         """GET /api/dag/pipelines 无 PG 时走 YAML 文件回退"""
-        from gateway.db import get_pg_pool
+        from business.db import get_pg_pool
         pipeline_app.dependency_overrides[get_pg_pool] = lambda: None
 
         client = TestClient(pipeline_app)
@@ -280,7 +280,7 @@ class TestPipelineCRUD:
             "name": "test", "mode": "stream", "version": "2", "status": "active",
         })
         mock_pg.execute = AsyncMock()
-        from gateway.db import get_pg_pool
+        from business.db import get_pg_pool
         pipeline_app.dependency_overrides[get_pg_pool] = lambda: mock_pg
 
         valid_yaml = "nodes:\n  - id: ingest\n    type: kafka_consumer\n    config:\n      topic: test"
@@ -304,7 +304,7 @@ class TestPipelineCRUD:
         })
         mock_pg.fetchval = AsyncMock(return_value=3)
         mock_pg.execute = AsyncMock()
-        from gateway.db import get_pg_pool
+        from business.db import get_pg_pool
         pipeline_app.dependency_overrides[get_pg_pool] = lambda: mock_pg
 
         client = TestClient(pipeline_app)
@@ -322,7 +322,7 @@ class TestPipelineCRUD:
 
     def test_pipeline_requires_admin(self, pipeline_app):
         """viewer 角色不能创建 pipeline"""
-        from shared.config import get_settings
+        from common.config import get_settings
         s = get_settings()
         viewer_token = jwt.encode(
             {"sub": "viewer-user", "tenant_id": "default", "role": "viewer"},

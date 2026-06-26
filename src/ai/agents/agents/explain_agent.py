@@ -15,10 +15,10 @@ import math
 from collections import Counter
 from typing import Any
 
-from agent_layer.base_agent import BaseAgent, AgentState
-from agent_layer.a2a.bus import AgentBus
-from shared.config import get_settings, has_valid_llm_key
-from shared.observability import get_logger
+from ai.agents.base_agent import BaseAgent, AgentState
+from ai.agents.a2a.bus import AgentBus
+from common.config import get_settings, has_valid_llm_key
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 
@@ -65,7 +65,7 @@ class ExplainAgent(BaseAgent):
         """查询 RAG 知识库获取家族特征参考信息（5s 超时保护）。"""
         import asyncio
         try:
-            from agent_layer.rag.engine import ThreatKnowledgeRAG
+            from ai.agents.rag.engine import ThreatKnowledgeRAG
             rag = ThreatKnowledgeRAG.get_instance()
             try:
                 result = await asyncio.wait_for(
@@ -167,8 +167,8 @@ class ExplainAgent(BaseAgent):
         if self._lc_tools_cache is not None:
             return self._lc_tools_cache
         try:
-            from agent_layer.mcp.server import MCPServer
-            from agent_layer.fc_bridge import MCPFunctionCallingBridge
+            from ai.agents.mcp.server import MCPServer
+            from ai.agents.fc_bridge import MCPFunctionCallingBridge
             server = MCPServer()
             server.register_defaults()
             bridge = MCPFunctionCallingBridge(

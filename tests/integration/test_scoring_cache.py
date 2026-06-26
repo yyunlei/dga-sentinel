@@ -16,8 +16,8 @@ import pytest
 from fastapi.testclient import TestClient
 from jose import jwt
 
-from shared.config import get_settings
-from gateway.db import get_es_client, get_redis_client
+from common.config import get_settings
+from business.db import get_es_client, get_redis_client
 
 
 # ── Fixtures ──────────────────────────────────────────────
@@ -75,9 +75,9 @@ def app(mock_redis):
     os.environ["APP_ENV"] = "production"
     os.environ["REDIS_URL"] = "redis://localhost:6379/0"
     get_settings.cache_clear()
-    from gateway.middleware import rate_limit
+    from business.middleware import rate_limit
     rate_limit._limiter = None
-    from gateway.main import app
+    from business.main import app
 
     # Override FastAPI dependencies to inject mocks
     app.dependency_overrides[get_redis_client] = lambda: mock_redis
@@ -177,7 +177,7 @@ class TestScoringCacheIntegration:
     def test_cache_ttl_is_300(self):
         """Verify the TTL constant used in score.py is 300."""
         import inspect
-        from gateway.routers import score as score_mod
+        from business.routers import score as score_mod
         source = inspect.getsource(score_mod)
         assert "ex=300" in source
 

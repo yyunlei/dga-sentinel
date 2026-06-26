@@ -6,9 +6,9 @@ from __future__ import annotations
 
 import pytest
 
-from agent_layer.mcp.server import MCPServer
-from agent_layer.fc_bridge import MCPFunctionCallingBridge, _schema_to_pydantic
-from agent_layer.fc_security import FCSecurityGuard
+from ai.agents.mcp.server import MCPServer
+from ai.agents.fc_bridge import MCPFunctionCallingBridge, _schema_to_pydantic
+from ai.agents.fc_security import FCSecurityGuard
 
 
 @pytest.fixture

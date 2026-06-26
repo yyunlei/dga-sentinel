@@ -22,12 +22,12 @@ import pytest
 class TestThreatEmbedding:
 
     def test_embedding_default_dim_768(self):
-        from agent_layer.rag.embedding import ThreatEmbedding
+        from ai.agents.rag.embedding import ThreatEmbedding
         embedder = ThreatEmbedding()
         assert embedder.dim == 768
 
     def test_fallback_embed_produces_correct_dim(self):
-        from agent_layer.rag.embedding import ThreatEmbedding
+        from ai.agents.rag.embedding import ThreatEmbedding
         embedder = ThreatEmbedding(dim=768)
         embedder._model = "fallback"
         vectors = embedder.embed(["test domain query"])
@@ -36,7 +36,7 @@ class TestThreatEmbedding:
 
     def test_fallback_embed_returns_float_list(self):
         """Fallback embedding returns a list of floats with correct dimension."""
-        from agent_layer.rag.embedding import ThreatEmbedding
+        from ai.agents.rag.embedding import ThreatEmbedding
         embedder = ThreatEmbedding(dim=768)
         embedder._model = "fallback"
         vectors = embedder.embed(["hello world"])
@@ -50,7 +50,7 @@ class TestThreatEmbedding:
 class TestDocumentIngest:
 
     def test_load_documents_from_directory(self):
-        from agent_layer.rag.ingest import load_documents
+        from ai.agents.rag.ingest import load_documents
         with tempfile.TemporaryDirectory() as tmpdir:
             p = Path(tmpdir) / "test.md"
             p.write_text("# Conficker\nDGA family info", encoding="utf-8")
@@ -60,7 +60,7 @@ class TestDocumentIngest:
             assert docs[0]["metadata"]["title"] == "test"
 
     def test_split_documents_chunking(self):
-        from agent_layer.rag.ingest import split_documents
+        from ai.agents.rag.ingest import split_documents
         docs = [{"content": "A" * 1000, "metadata": {"source": "test.md", "category": "dga", "title": "test"}}]
         chunks = split_documents(docs, chunk_size=200, overlap=50)
         assert len(chunks) > 1
@@ -69,7 +69,7 @@ class TestDocumentIngest:
             assert "chunk_id" in chunk["metadata"]
 
     def test_split_preserves_metadata(self):
-        from agent_layer.rag.ingest import split_documents
+        from ai.agents.rag.ingest import split_documents
         docs = [{"content": "short text", "metadata": {"source": "a.md", "category": "intel", "title": "a"}}]
         chunks = split_documents(docs, chunk_size=512, overlap=50)
         assert len(chunks) == 1
@@ -87,7 +87,7 @@ class TestThreatKnowledgeRAG:
             es_hosts="http://localhost:9200",
             deepseek_api_key="",
         )
-        from agent_layer.rag.engine import ThreatKnowledgeRAG
+        from ai.agents.rag.engine import ThreatKnowledgeRAG
         rag = ThreatKnowledgeRAG()
         assert rag._es is None  # lazy init
         assert rag._embedder is not None
@@ -123,7 +123,7 @@ class TestThreatKnowledgeRAG:
         mock_es.close = AsyncMock()
         mock_es_cls.return_value = mock_es
 
-        from agent_layer.rag.engine import ThreatKnowledgeRAG
+        from ai.agents.rag.engine import ThreatKnowledgeRAG
         rag = ThreatKnowledgeRAG()
         result = await rag.query("What is Conficker?")
         await rag.close()
@@ -143,7 +143,7 @@ class TestThreatKnowledgeRAG:
             es_hosts="http://localhost:9200",
             deepseek_api_key="",
         )
-        from agent_layer.rag.engine import ThreatKnowledgeRAG
+        from ai.agents.rag.engine import ThreatKnowledgeRAG
         rag = ThreatKnowledgeRAG()
         # Force ES to raise
         rag._es = AsyncMock()

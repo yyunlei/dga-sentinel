@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from jose import jwt
 
-from shared.config import get_settings
+from common.config import get_settings
 
 settings = get_settings()
 
@@ -33,10 +33,10 @@ def _patch_lifespan():
         yield
 
     with patch("gateway.main.lifespan", _noop_lifespan):
-        import importlib, gateway.main  # noqa: E401
-        importlib.reload(gateway.main)
-        yield gateway.main.app
-        importlib.reload(gateway.main)
+        import importlib, business.main  # noqa: E401
+        importlib.reload(business.main)
+        yield business.main.app
+        importlib.reload(business.main)
 
 
 @pytest.fixture()
@@ -89,7 +89,7 @@ class TestPerformance:
     def test_redis_cache_avoids_scoring_call(self, mock_post, _sr, _patch_lifespan):
         """When all domains are cached in Redis, scoring service should not be called."""
         from fastapi.testclient import TestClient
-        from gateway.db import get_es_client, get_redis_client
+        from business.db import get_es_client, get_redis_client
 
         cached = json.dumps({
             "domain": "cached.com", "score": 0.2, "is_dga": False,

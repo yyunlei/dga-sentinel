@@ -9,10 +9,10 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
-from gateway.middleware.auth import verify_token
-from gateway.middleware.rbac import require_analyst
-from shared.config import get_settings
-from shared.observability import get_logger
+from business.middleware.auth import verify_token
+from business.middleware.rbac import require_analyst
+from common.config import get_settings
+from common.observability import get_logger
 
 router = APIRouter()
 logger = get_logger(__name__)

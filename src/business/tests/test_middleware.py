@@ -1,11 +1,11 @@
 """
-gateway 中间件单元测试 — 限流 + JWT 认证
+business 中间件单元测试 — 限流 + JWT 认证
 """
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from gateway.middleware.rate_limit import InMemoryRateLimiter
+from business.middleware.rate_limit import InMemoryRateLimiter
 
 
 # ── InMemoryRateLimiter ──────────────────────────────────────────
@@ -48,7 +48,7 @@ async def test_verify_token_dev_mode_no_credentials():
     """开发模式下无 token 返回默认 payload"""
     with patch("gateway.middleware.auth.get_settings") as mock_settings:
         mock_settings.return_value = MagicMock(is_dev=True)
-        from gateway.middleware.auth import verify_token
+        from business.middleware.auth import verify_token
         result = await verify_token(credentials=None)
         assert result == {"sub": "dev", "tenant_id": "default"}
 
@@ -59,7 +59,7 @@ async def test_verify_token_missing_in_prod():
     with patch("gateway.middleware.auth.get_settings") as mock_settings:
         mock_settings.return_value = MagicMock(is_dev=False)
         from fastapi import HTTPException
-        from gateway.middleware.auth import verify_token
+        from business.middleware.auth import verify_token
         with pytest.raises(HTTPException) as exc_info:
             await verify_token(credentials=None)
         assert exc_info.value.status_code == 401
@@ -74,7 +74,7 @@ async def test_verify_token_invalid_jwt():
         )
         from fastapi import HTTPException
         from fastapi.security import HTTPAuthorizationCredentials
-        from gateway.middleware.auth import verify_token
+        from business.middleware.auth import verify_token
 
         creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials="invalid.token.here")
         with pytest.raises(HTTPException) as exc_info:

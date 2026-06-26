@@ -30,7 +30,7 @@ import traceback
 from pathlib import Path
 from uuid import uuid4
 
-# 让脚本能从项目根目录加载 agent_layer 包
+# 让脚本能从项目根目录加载 ai.agents 包
 _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
@@ -80,7 +80,7 @@ async def test_whitelist_promotion(pg_pool, redis_client) -> bool:
         pre = await redis_client.sismember("whitelist:auto", domain)
         assert not pre, "domain unexpectedly already in whitelist:auto"
 
-        from agent_layer.feedback_loop import _aggregate_once
+        from ai.agents.feedback_loop import _aggregate_once
         stats = await _aggregate_once(pg_pool, redis_client)
 
         post = await redis_client.sismember("whitelist:auto", domain)
@@ -118,7 +118,7 @@ async def test_family_recommender(pg_pool) -> bool:
                     f"fam-test-{i}", f"fam-test-{i}.example", family, annotator,
                 )
 
-        from agent_layer.feedback_loop import _analyze_family_thresholds
+        from ai.agents.feedback_loop import _analyze_family_thresholds
         issued = await _analyze_family_thresholds(pg_pool)
 
         async with pg_pool.acquire() as c:

@@ -89,12 +89,12 @@ class TestDockerServices:
         assert not missing_ports, f"Missing port mappings: {missing_ports}"
 
     def test_network_defined(self, compose_data):
-        """A shared network should be defined."""
+        """A common network should be defined."""
         networks = compose_data.get("networks", {})
         assert len(networks) >= 1, "No networks defined in docker-compose.yml"
 
     def test_application_services_have_env_file(self, compose_data):
-        """Application services (gateway, scoring, agent, dag) should use .env."""
+        """Application services (business, scoring, agent, dag) should use .env."""
         app_services = ["gateway", "scoring-service", "agent-layer", "dag-engine"]
         services = compose_data.get("services", {})
         for svc in app_services:

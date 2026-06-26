@@ -2,10 +2,10 @@
 
 import asyncio
 import pytest
-from dag_engine.nodes.transform.dns_parser import DNSParserNode
-from dag_engine.nodes.filter.whitelist import WhitelistNode
-from dag_engine.nodes.filter.threshold import ThresholdNode
-from dag_engine.nodes.filter.blacklist import BlacklistNode
+from dag.nodes.transform.dns_parser import DNSParserNode
+from dag.nodes.filter.whitelist import WhitelistNode
+from dag.nodes.filter.threshold import ThresholdNode
+from dag.nodes.filter.blacklist import BlacklistNode
 
 
 class TestDNSParserNode:

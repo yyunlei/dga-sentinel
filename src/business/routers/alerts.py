@@ -11,10 +11,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from elasticsearch import AsyncElasticsearch
 
-from gateway.db import get_es_client
-from gateway.middleware.rbac import require_analyst, require_write
-from shared.config import get_settings
-from shared.constants import ES_INDEX_EVENTS
+from business.db import get_es_client
+from business.middleware.rbac import require_analyst, require_write
+from common.config import get_settings
+from common.constants import ES_INDEX_EVENTS
 
 # ES 8 服务不接受 compatible-with=9，用兼容头直接请求
 _ES_V8_HEADERS = {

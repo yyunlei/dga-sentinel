@@ -10,7 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 from jose import jwt
 
-from shared.config import get_settings
+from common.config import get_settings
 
 
 @pytest.fixture
@@ -32,13 +32,13 @@ def app():
     import os
     os.environ["APP_ENV"] = "production"
     os.environ["REDIS_URL"] = "redis://localhost:6379/0"
-    from shared.config import get_settings
+    from common.config import get_settings
     get_settings.cache_clear()
     # Reset rate limiter singleton
-    from gateway.middleware import rate_limit
+    from business.middleware import rate_limit
     rate_limit._limiter = None
 
-    from gateway.main import app
+    from business.main import app
     yield app
 
     os.environ["APP_ENV"] = "development"

@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import MagicMock
 from fastapi import HTTPException
 
-from gateway.middleware.rbac import (
+from business.middleware.rbac import (
     RBACDependency,
     ROLE_PERMISSIONS,
     require_admin,

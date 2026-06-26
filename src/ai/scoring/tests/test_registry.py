@@ -1,7 +1,7 @@
 """ModelRegistry 单元测试"""
 
 import pytest
-from scoring_service.models.registry import ModelRegistry, ModelEntry
+from ai.scoring.models.registry import ModelRegistry, ModelEntry
 
 
 class TestModelRegistry:

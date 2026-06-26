@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import re
 
-from shared.config import get_settings
-from shared.observability import get_logger
+from common.config import get_settings
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 
@@ -88,7 +88,7 @@ class IntentRouter:
         logger.info("intent_dispatch", intent=intent, confidence=result["confidence"])
 
         if intent == "query":
-            from agent_layer.text2sql.engine import Text2SQLEngine
+            from ai.agents.text2sql.engine import Text2SQLEngine
             engine = Text2SQLEngine()
             return await engine.query(question)
 
@@ -100,7 +100,7 @@ class IntentRouter:
 
         if intent == "knowledge":
             try:
-                from agent_layer.rag.engine import ThreatKnowledgeRAG
+                from ai.agents.rag.engine import ThreatKnowledgeRAG
                 rag = ThreatKnowledgeRAG()
                 return await rag.query(question)
             except ImportError:

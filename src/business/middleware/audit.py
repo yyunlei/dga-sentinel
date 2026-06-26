@@ -9,8 +9,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from shared.config import get_settings
-from shared.observability import get_logger
+from common.config import get_settings
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 
@@ -40,7 +40,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
 
     async def _log_audit(self, user_id: str, action: str, resource: str, detail: str, ip: str):
         try:
-            from gateway.db import _pg_pool
+            from business.db import _pg_pool
             if _pg_pool:
                 await _pg_pool.execute(
                     "INSERT INTO audit_log (user_id, action, resource, detail, ip_address) VALUES ($1, $2, $3, $4, $5)",

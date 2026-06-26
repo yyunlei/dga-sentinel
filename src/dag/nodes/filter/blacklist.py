@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from dag_engine.nodes.base import BaseNode, logger
+from dag.nodes.base import BaseNode, logger
 
 
 class BlacklistNode(BaseNode):
@@ -35,7 +35,7 @@ class BlacklistNode(BaseNode):
         if self._redis is None:
             try:
                 import redis.asyncio as aioredis
-                from shared.config import get_settings
+                from common.config import get_settings
                 self._redis = aioredis.from_url(
                     get_settings().redis_url, decode_responses=True,
                 )

@@ -16,7 +16,7 @@ import pytest
 from fastapi.testclient import TestClient
 from jose import jwt
 
-from shared.config import get_settings
+from common.config import get_settings
 
 
 # ── Fixtures ──────────────────────────────────────────────
@@ -41,11 +41,11 @@ def auth_headers(valid_token):
 def app():
     os.environ["APP_ENV"] = "production"
     os.environ["REDIS_URL"] = "redis://localhost:6379/0"
-    from shared.config import get_settings
+    from common.config import get_settings
     get_settings.cache_clear()
-    from gateway.middleware import rate_limit
+    from business.middleware import rate_limit
     rate_limit._limiter = None
-    from gateway.main import app
+    from business.main import app
     yield app
     os.environ["APP_ENV"] = "development"
     get_settings.cache_clear()
@@ -57,39 +57,39 @@ def app():
 class TestText2SQLEngine:
 
     def test_engine_initialization(self):
-        from agent_layer.text2sql.engine import Text2SQLEngine
+        from ai.agents.text2sql.engine import Text2SQLEngine
         engine = Text2SQLEngine(db_type="starrocks")
         assert engine.db_type == "starrocks"
         assert "dga_events" in engine.allowed_tables
         assert "alert_summary" in engine.allowed_tables
 
     def test_validate_select_allowed(self):
-        from agent_layer.text2sql.engine import Text2SQLEngine
+        from ai.agents.text2sql.engine import Text2SQLEngine
         engine = Text2SQLEngine(db_type="starrocks")
         result = engine._validate_sql("SELECT * FROM dga_events LIMIT 10")
         assert result is None  # no error
 
     def test_validate_drop_rejected(self):
-        from agent_layer.text2sql.engine import Text2SQLEngine
+        from ai.agents.text2sql.engine import Text2SQLEngine
         engine = Text2SQLEngine(db_type="starrocks")
         result = engine._validate_sql("DROP TABLE dga_events")
         assert result is not None
         assert "SELECT" in result or "Forbidden" in result
 
     def test_validate_delete_rejected(self):
-        from agent_layer.text2sql.engine import Text2SQLEngine
+        from ai.agents.text2sql.engine import Text2SQLEngine
         engine = Text2SQLEngine(db_type="starrocks")
         result = engine._validate_sql("DELETE FROM dga_events WHERE 1=1")
         assert result is not None
 
     def test_validate_insert_rejected(self):
-        from agent_layer.text2sql.engine import Text2SQLEngine
+        from ai.agents.text2sql.engine import Text2SQLEngine
         engine = Text2SQLEngine(db_type="starrocks")
         result = engine._validate_sql("INSERT INTO dga_events VALUES ('a','b')")
         assert result is not None
 
     def test_validate_unknown_table_rejected(self):
-        from agent_layer.text2sql.engine import Text2SQLEngine
+        from ai.agents.text2sql.engine import Text2SQLEngine
         engine = Text2SQLEngine(db_type="starrocks")
         result = engine._validate_sql("SELECT * FROM secret_table")
         assert result is not None
@@ -101,13 +101,13 @@ class TestText2SQLEngine:
 class TestSchemaRegistry:
 
     def test_allowed_tables_starrocks(self):
-        from agent_layer.text2sql.schema_registry import get_allowed_tables
+        from ai.agents.text2sql.schema_registry import get_allowed_tables
         tables = get_allowed_tables("starrocks")
         assert "dga_events" in tables
         assert "alert_summary" in tables
 
     def test_schema_context_contains_ddl(self):
-        from agent_layer.text2sql.schema_registry import get_schema_context
+        from ai.agents.text2sql.schema_registry import get_schema_context
         ctx = get_schema_context("starrocks")
         assert "CREATE TABLE" in ctx
         assert "dga_events" in ctx
@@ -118,25 +118,25 @@ class TestSchemaRegistry:
 class TestIntentRouter:
 
     def test_classify_query_intent(self):
-        from agent_layer.intent_router import IntentRouter
+        from ai.agents.intent_router import IntentRouter
         router = IntentRouter()
         intent = router.classify_intent("查询过去24小时告警")
         assert intent == "query"
 
     def test_classify_knowledge_intent(self):
-        from agent_layer.intent_router import IntentRouter
+        from ai.agents.intent_router import IntentRouter
         router = IntentRouter()
         intent = router.classify_intent("conficker家族特征")
         assert intent == "knowledge"
 
     def test_classify_analyze_intent(self):
-        from agent_layer.intent_router import IntentRouter
+        from ai.agents.intent_router import IntentRouter
         router = IntentRouter()
         intent = router.classify_intent("分析这个告警事件")
         assert intent == "analyze"
 
     def test_classify_default_fallback(self):
-        from agent_layer.intent_router import IntentRouter
+        from ai.agents.intent_router import IntentRouter
         router = IntentRouter()
         intent = router.classify_intent("hello world random text")
         assert intent == "query"  # default fallback

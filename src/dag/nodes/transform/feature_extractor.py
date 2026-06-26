@@ -1,14 +1,14 @@
 """
-特征提取节点 — 调用 scoring_service 的特征提取器
+特征提取节点 — 调用 ai.scoring 的特征提取器
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-from dag_engine.nodes.base import BaseNode
-from scoring_service.features.lexical import extract_lexical_features
-from scoring_service.features.entropy import extract_entropy_features
+from dag.nodes.base import BaseNode
+from ai.scoring.features.lexical import extract_lexical_features
+from ai.scoring.features.entropy import extract_entropy_features
 
 
 class FeatureExtractorNode(BaseNode):

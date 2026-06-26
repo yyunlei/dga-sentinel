@@ -12,11 +12,11 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from gateway.db import get_es_client, get_redis_client
-from gateway.middleware.rbac import require_analyst
-from shared.config import get_settings
-from shared.constants import ES_INDEX_EVENTS
-from shared.observability import get_logger
+from business.db import get_es_client, get_redis_client
+from business.middleware.rbac import require_analyst
+from common.config import get_settings
+from common.constants import ES_INDEX_EVENTS
+from common.observability import get_logger
 
 router = APIRouter()
 logger = get_logger(__name__)

@@ -16,17 +16,17 @@ from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from pydantic import BaseModel
 from starlette.responses import Response
 
-from shared.config import get_settings
-from shared.schemas import ScoreRequest, ScoreResponse, ScoreResult
-from shared.observability import (
+from common.config import get_settings
+from common.schemas import ScoreRequest, ScoreResponse, ScoreResult
+from common.observability import (
     setup_logging, get_logger, SCORE_REQUESTS, SCORE_LATENCY, DGA_HITS,
 )
-from shared.constants import DEFAULT_DGA_THRESHOLD
-from scoring_service.models.binary_model import BinaryModel
-from scoring_service.models.multi_model import MultiClassModel
-from scoring_service.models.ensemble import EnsembleScorer
-from scoring_service.models.registry import ModelRegistry, ModelEntry
-from scoring_service.drift import DriftMonitor
+from common.constants import DEFAULT_DGA_THRESHOLD
+from ai.scoring.models.binary_model import BinaryModel
+from ai.scoring.models.multi_model import MultiClassModel
+from ai.scoring.models.ensemble import EnsembleScorer
+from ai.scoring.models.registry import ModelRegistry, ModelEntry
+from ai.scoring.drift import DriftMonitor
 
 logger = get_logger(__name__)
 
@@ -118,7 +118,7 @@ async def lifespan(app: FastAPI):
     global _scorer, _drift, _drift_pg_pool, _drift_task
     settings = get_settings()
     setup_logging(settings.log_level, json_output=not settings.is_dev)
-    from shared.observability import setup_tracing
+    from common.observability import setup_tracing
     setup_tracing("scoring-service", settings.otel_endpoint)
     logger.info("scoring_service_starting")
     _scorer = _load_models()
@@ -128,7 +128,7 @@ async def lifespan(app: FastAPI):
     _drift_pg_pool = await _try_init_drift_pg_pool(settings.pg_dsn)
     _drift_task = asyncio.create_task(_drift_periodic_check())
 
-    from scoring_service.grpc_server import start_grpc_server
+    from ai.scoring.grpc_server import start_grpc_server
     grpc_server = start_grpc_server(_scorer)
     logger.info("scoring_service_ready")
     yield

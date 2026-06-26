@@ -10,7 +10,7 @@ from typing import Any
 
 import httpx
 
-from dag_engine.nodes.base import BaseNode, logger
+from dag.nodes.base import BaseNode, logger
 
 
 class ScoringClientNode(BaseNode):

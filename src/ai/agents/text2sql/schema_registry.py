@@ -1,6 +1,6 @@
 """StarRocks/PG 表结构 DDL 缓存 + 字段说明"""
 from __future__ import annotations
-from shared.observability import get_logger
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

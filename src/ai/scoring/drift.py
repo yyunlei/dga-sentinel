@@ -9,7 +9,7 @@ import math
 from collections import defaultdict
 from typing import Any
 
-from shared.observability import get_logger
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

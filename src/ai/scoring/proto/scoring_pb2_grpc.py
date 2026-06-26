@@ -3,7 +3,7 @@ Auto-generated-style gRPC stubs for scoring.proto
 In production, regenerate with: bash compile.sh
 """
 import grpc
-from scoring_service.proto import scoring_pb2 as scoring__pb2
+from ai.scoring.proto import scoring_pb2 as scoring__pb2
 
 
 class ScoringServiceServicer:

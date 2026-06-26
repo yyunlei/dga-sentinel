@@ -21,8 +21,8 @@ from datetime import datetime, timezone
 
 import uvicorn
 
-from agent_layer.orchestrator import DispatchRequest
-from shared.observability import setup_logging, get_logger
+from ai.agents.orchestrator import DispatchRequest
+from common.observability import setup_logging, get_logger
 
 logger = get_logger(__name__)
 
@@ -224,13 +224,13 @@ async def start_orchestrator():
     """初始化 Agent Orchestrator + AgentBus + Streams Redis 客户端。"""
     global _orchestrator, _streams_redis
 
-    from agent_layer.a2a.bus import AgentBus
-    from agent_layer.orchestrator import AgentOrchestrator
-    from agent_layer.agents.triage_agent import TriageAgent
-    from agent_layer.agents.explain_agent import ExplainAgent
-    from agent_layer.agents.threat_intel_agent import ThreatIntelAgent
-    from agent_layer.agents.response_agent import ResponseAgent
-    from shared.config import get_settings
+    from ai.agents.a2a.bus import AgentBus
+    from ai.agents.orchestrator import AgentOrchestrator
+    from ai.agents.agents.triage_agent import TriageAgent
+    from ai.agents.agents.explain_agent import ExplainAgent
+    from ai.agents.agents.threat_intel_agent import ThreatIntelAgent
+    from ai.agents.agents.response_agent import ResponseAgent
+    from common.config import get_settings
 
     settings = get_settings()
 
@@ -264,7 +264,7 @@ async def start_orchestrator():
 async def start_alert_consumer():
     """订阅 Kafka dga-alerts topic，每条告警异步触发一次 pipeline。"""
     from aiokafka import AIOKafkaConsumer
-    from shared.config import get_settings
+    from common.config import get_settings
 
     settings = get_settings()
     bootstrap = settings.kafka_bootstrap_servers
@@ -336,7 +336,7 @@ async def _bounded_pipeline(payload: dict, trace_id: str) -> None:
 
 async def start_mcp_server():
     """启动 MCP Server on port 8002 — dispatch / 监控 / RAG / text2sql 接口"""
-    from agent_layer.mcp.server import build_app
+    from ai.agents.mcp.server import build_app
     from fastapi import HTTPException, Query
 
     app = build_app()
@@ -405,7 +405,7 @@ async def start_mcp_server():
 
     @app.post("/rag/query")
     async def rag_query(body: dict):
-        from agent_layer.rag.engine import ThreatKnowledgeRAG
+        from ai.agents.rag.engine import ThreatKnowledgeRAG
         rag = ThreatKnowledgeRAG.get_instance()
         question = body.get("question", "")
         top_k = body.get("top_k", 5)
@@ -415,7 +415,7 @@ async def start_mcp_server():
 
     @app.post("/query")
     async def text2sql_query(body: dict):
-        from agent_layer.text2sql.engine import Text2SQLEngine
+        from ai.agents.text2sql.engine import Text2SQLEngine
         question = body.get("question", "")
         db_type = body.get("db_type", "starrocks")
         if not question:
@@ -435,7 +435,7 @@ async def start_mcp_server():
 async def main():
     setup_logging()
     logger.info("agent_layer_starting")
-    from agent_layer.feedback_loop import start_feedback_aggregator
+    from ai.agents.feedback_loop import start_feedback_aggregator
     await asyncio.gather(
         start_mcp_server(),
         start_orchestrator(),

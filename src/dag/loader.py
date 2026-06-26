@@ -9,20 +9,20 @@ from typing import Any
 
 import yaml
 
-from dag_engine.nodes.base import BaseNode
-from dag_engine.nodes.ingest.kafka_consumer import KafkaConsumerNode
-from dag_engine.nodes.ingest.file_reader import FileReaderNode
-from dag_engine.nodes.transform.dns_parser import DNSParserNode
-from dag_engine.nodes.transform.feature_extractor import FeatureExtractorNode
-from dag_engine.nodes.infer.scoring_client import ScoringClientNode
-from dag_engine.nodes.filter.whitelist import WhitelistNode
-from dag_engine.nodes.filter.threshold import ThresholdNode
-from dag_engine.nodes.filter.blacklist import BlacklistNode
-from dag_engine.nodes.sink.es_sink import ESSinkNode
-from dag_engine.nodes.sink.kafka_sink import KafkaSinkNode
-from dag_engine.nodes.sink.starrocks_sink import StarRocksSinkNode
-from dag_engine.nodes.sink.fan_out import FanOutNode
-from shared.observability import get_logger
+from dag.nodes.base import BaseNode
+from dag.nodes.ingest.kafka_consumer import KafkaConsumerNode
+from dag.nodes.ingest.file_reader import FileReaderNode
+from dag.nodes.transform.dns_parser import DNSParserNode
+from dag.nodes.transform.feature_extractor import FeatureExtractorNode
+from dag.nodes.infer.scoring_client import ScoringClientNode
+from dag.nodes.filter.whitelist import WhitelistNode
+from dag.nodes.filter.threshold import ThresholdNode
+from dag.nodes.filter.blacklist import BlacklistNode
+from dag.nodes.sink.es_sink import ESSinkNode
+from dag.nodes.sink.kafka_sink import KafkaSinkNode
+from dag.nodes.sink.starrocks_sink import StarRocksSinkNode
+from dag.nodes.sink.fan_out import FanOutNode
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

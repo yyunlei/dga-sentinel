@@ -11,8 +11,8 @@ from typing import Any, Type
 from pydantic import BaseModel, Field, create_model
 from langchain_core.tools import StructuredTool
 
-from agent_layer.mcp.server import MCPServer
-from shared.observability import get_logger
+from ai.agents.mcp.server import MCPServer
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

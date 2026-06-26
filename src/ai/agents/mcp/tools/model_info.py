@@ -1,8 +1,8 @@
 """MCP Tool — 模型信息查询"""
 from __future__ import annotations
 import asyncpg
-from shared.config import get_settings
-from shared.observability import get_logger
+from common.config import get_settings
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

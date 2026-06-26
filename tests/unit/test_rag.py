@@ -10,8 +10,8 @@ os.environ.setdefault("APP_ENV", "development")
 
 import pytest
 
-from agent_layer.rag.embedding import ThreatEmbedding
-from agent_layer.rag.ingest import load_documents, split_documents
+from ai.agents.rag.embedding import ThreatEmbedding
+from ai.agents.rag.ingest import load_documents, split_documents
 
 
 # ------------------------------------------------------------------ #
@@ -95,14 +95,14 @@ class TestThreatKnowledgeRAG:
     """RAG 引擎初始化与查询结构。"""
 
     def test_rag_engine_init(self):
-        from agent_layer.rag.engine import ThreatKnowledgeRAG
+        from ai.agents.rag.engine import ThreatKnowledgeRAG
         rag = ThreatKnowledgeRAG()
         assert rag is not None
         assert rag._embedder is not None
 
     @pytest.mark.asyncio
     async def test_rag_query_returns_structure(self):
-        from agent_layer.rag.engine import ThreatKnowledgeRAG
+        from ai.agents.rag.engine import ThreatKnowledgeRAG
         rag = ThreatKnowledgeRAG()
 
         # Mock ES to avoid real connection
@@ -130,7 +130,7 @@ class TestIntentRouter:
 
     @pytest.fixture(autouse=True)
     def _router(self):
-        from agent_layer.intent_router import IntentRouter
+        from ai.agents.intent_router import IntentRouter
         self.router = IntentRouter()
 
     def test_keyword_routing_query(self):

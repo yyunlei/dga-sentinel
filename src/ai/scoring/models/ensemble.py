@@ -8,8 +8,8 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
-from scoring_service.models.binary_model import BinaryModel
-from scoring_service.models.multi_model import MultiClassModel
+from ai.scoring.models.binary_model import BinaryModel
+from ai.scoring.models.multi_model import MultiClassModel
 
 
 @dataclass

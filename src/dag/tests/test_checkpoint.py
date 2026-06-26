@@ -3,7 +3,7 @@
 import asyncio
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from dag_engine.checkpoint import CheckpointManager
+from dag.checkpoint import CheckpointManager
 
 
 class TestCheckpointManager:

@@ -6,7 +6,7 @@ import asyncio
 import socket
 from datetime import datetime, timezone
 
-from shared.observability import get_logger
+from common.observability import get_logger
 
 logger = get_logger(__name__)
 

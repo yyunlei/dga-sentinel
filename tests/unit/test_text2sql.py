@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import pytest
 
-from agent_layer.text2sql.engine import Text2SQLEngine, FORBIDDEN_KEYWORDS
-from agent_layer.text2sql.schema_registry import (
+from ai.agents.text2sql.engine import Text2SQLEngine, FORBIDDEN_KEYWORDS
+from ai.agents.text2sql.schema_registry import (
     get_schema_context,
     get_allowed_tables,
     SCHEMA_REGISTRY,

@@ -13,11 +13,11 @@ import yaml
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from gateway.db import get_pg_pool, get_redis_client, get_es_client
-from gateway.middleware.auth import verify_token
-from gateway.middleware.rbac import require_admin, require_analyst, require_viewer
-from shared.config import get_settings
-from shared.constants import ES_INDEX_EVENTS
+from business.db import get_pg_pool, get_redis_client, get_es_client
+from business.middleware.auth import verify_token
+from business.middleware.rbac import require_admin, require_analyst, require_viewer
+from common.config import get_settings
+from common.constants import ES_INDEX_EVENTS
 
 router = APIRouter()
 
