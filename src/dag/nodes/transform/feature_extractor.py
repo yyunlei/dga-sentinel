@@ -7,8 +7,8 @@ from __future__ import annotations
 from typing import Any
 
 from dag.nodes.base import BaseNode
-from ai.scoring.features.lexical import extract_lexical_features
-from ai.scoring.features.entropy import extract_entropy_features
+from common.features.lexical import extract_lexical_features
+from common.features.entropy import extract_entropy_features
 
 
 class FeatureExtractorNode(BaseNode):
