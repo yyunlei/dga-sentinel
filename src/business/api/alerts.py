@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from elasticsearch import AsyncElasticsearch
 
 from business.repositories.es_repo import AlertRepo
-from business.repositories.pg_repo import get_es_client
+from business.infra.connections import get_es_client
 from business.services.alert_service import AlertService
 from business.middleware.rbac import require_analyst, require_write
 from common.config import get_settings

@@ -117,7 +117,7 @@ class TestFullPipeline:
     def test_cache_hit_skips_scoring_service(self, mock_post, _sr, _patch_lifespan):
         """Cached domain should be returned without calling scoring service."""
         from fastapi.testclient import TestClient
-        from business.repositories.pg_repo import get_es_client, get_redis_client
+        from business.infra.connections import get_es_client, get_redis_client
 
         cached_result = {
             "domain": "cached.xyz",

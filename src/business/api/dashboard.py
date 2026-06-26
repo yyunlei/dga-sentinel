@@ -13,7 +13,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from business.repositories.pg_repo import get_redis_client
+from business.infra.connections import get_redis_client
 from business.repositories.es_repo import DashboardRepo
 from business.services.realtime_service import RealtimeService
 from business.middleware.rbac import require_analyst

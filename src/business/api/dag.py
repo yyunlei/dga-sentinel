@@ -9,7 +9,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from business.repositories.pg_repo import get_pg_pool, get_redis_client, get_es_client
+from business.infra.connections import get_pg_pool, get_redis_client, get_es_client
 from business.middleware.rbac import require_admin, require_analyst, require_viewer
 
 from business.repositories.pipeline_repo import PipelineRepo

@@ -17,7 +17,7 @@ from common.observability import setup_logging, get_logger
 from business.middleware.tracing import TracingMiddleware
 from business.middleware.security import SecurityHeadersMiddleware
 from business.middleware.audit import AuditMiddleware
-from business.repositories.pg_repo import init_db, close_db
+from business.infra.connections import init_db, close_db
 from business.api import score, health, alerts, models, dag, explain, feedback, realtime, query, node_configs, agents, dashboard, reports, rag, operations
 
 logger = get_logger(__name__)

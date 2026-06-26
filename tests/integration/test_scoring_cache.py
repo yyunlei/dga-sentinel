@@ -17,7 +17,7 @@ from fastapi.testclient import TestClient
 from jose import jwt
 
 from common.config import get_settings
-from business.repositories.pg_repo import get_es_client, get_redis_client
+from business.infra.connections import get_es_client, get_redis_client
 
 
 # ── Fixtures ──────────────────────────────────────────────

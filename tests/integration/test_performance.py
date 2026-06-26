@@ -89,7 +89,7 @@ class TestPerformance:
     def test_redis_cache_avoids_scoring_call(self, mock_post, _sr, _patch_lifespan):
         """When all domains are cached in Redis, scoring service should not be called."""
         from fastapi.testclient import TestClient
-        from business.repositories.pg_repo import get_es_client, get_redis_client
+        from business.infra.connections import get_es_client, get_redis_client
 
         cached = json.dumps({
             "domain": "cached.com", "score": 0.2, "is_dga": False,

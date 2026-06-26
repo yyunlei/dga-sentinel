@@ -8,7 +8,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from business.repositories.pg_repo import get_pg_pool
+from business.infra.connections import get_pg_pool
 from business.middleware.rbac import require_admin, require_viewer
 from business.repositories.model_repo import ModelRepo
 from business.services.model_service import ModelService

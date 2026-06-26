@@ -15,7 +15,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from business.repositories.pg_repo import get_pg_pool
+from business.infra.connections import get_pg_pool
 from business.middleware.auth import verify_token
 from business.middleware.rbac import require_analyst
 from business.repositories.operations_repo import OperationsRepo

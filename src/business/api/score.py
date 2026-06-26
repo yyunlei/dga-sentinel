@@ -15,7 +15,7 @@ from common.schemas import ScoreRequest, ScoreResponse
 from common.config import get_settings
 from business.middleware.rate_limit import rate_limit_check
 from business.middleware.rbac import require_analyst
-from business.repositories.pg_repo import get_es_client, get_redis_client
+from business.infra.connections import get_es_client, get_redis_client
 from business.repositories.starrocks_repo import write_events_to_starrocks
 from business.repositories.scoring_client import ScoringClient
 from business.services.detection_service import DetectionService

@@ -10,7 +10,7 @@ import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from business.repositories.pg_repo import get_pg_pool
+from business.infra.connections import get_pg_pool
 from business.middleware.rbac import require_admin, require_viewer
 
 from business.repositories.pipeline_repo import PipelineRepo

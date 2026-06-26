@@ -25,7 +25,7 @@ def app():
     """Create a FastAPI test app with auth and ES dependency bypassed."""
     from business.main import app as _app
     from business.middleware.rbac import require_analyst, require_write
-    from business.repositories.pg_repo import get_es_client
+    from business.infra.connections import get_es_client
 
     mock_es = MagicMock()
     mock_es.__bool__ = lambda self: True
@@ -42,7 +42,7 @@ def app_no_es():
     """Create a FastAPI test app with ES returning None (unavailable)."""
     from business.main import app as _app
     from business.middleware.rbac import require_analyst, require_write
-    from business.repositories.pg_repo import get_es_client
+    from business.infra.connections import get_es_client
 
     _app.dependency_overrides[require_analyst] = lambda: None
     _app.dependency_overrides[require_write] = lambda: None

@@ -40,7 +40,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
 
     async def _log_audit(self, user_id: str, action: str, resource: str, detail: str, ip: str):
         try:
-            from business.repositories.pg_repo import _pg_pool
+            from business.infra.connections import _pg_pool
             if _pg_pool:
                 await _pg_pool.execute(
                     "INSERT INTO audit_log (user_id, action, resource, detail, ip_address) VALUES ($1, $2, $3, $4, $5)",
