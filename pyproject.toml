@@ -66,5 +66,9 @@ dev = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
 [tool.setuptools.packages.find]
-include = ["shared*", "gateway*", "scoring_service*", "dag_engine*", "agent_layer*"]
+where = ["src"]
+include = ["common*", "business*", "ai*", "dag*"]

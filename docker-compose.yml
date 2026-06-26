@@ -229,7 +229,7 @@ services:
   scoring-service:
     build:
       context: .
-      dockerfile: scoring_service/Dockerfile
+      dockerfile: src/ai/scoring/Dockerfile
     container_name: dga-sentinel-scoring
     restart: unless-stopped
     ports:
@@ -251,7 +251,7 @@ services:
   gateway:
     build:
       context: .
-      dockerfile: gateway/Dockerfile
+      dockerfile: src/business/Dockerfile
     container_name: dga-sentinel-gateway
     restart: unless-stopped
     ports:
@@ -282,7 +282,7 @@ services:
   dag-engine:
     build:
       context: .
-      dockerfile: dag_engine/Dockerfile
+      dockerfile: src/dag/Dockerfile
     container_name: dga-sentinel-dag-engine
     restart: unless-stopped
     env_file: .env
@@ -309,7 +309,7 @@ services:
   agent-layer:
     build:
       context: .
-      dockerfile: agent_layer/Dockerfile
+      dockerfile: src/ai/agents/Dockerfile
     container_name: dga-sentinel-agent
     restart: unless-stopped
     env_file: .env
