@@ -9,6 +9,10 @@ from datetime import datetime, timezone
 
 from common.constants import ES_INDEX_EVENTS
 
+
+class IndexNotFoundError(Exception):
+    """目标 ES 索引不存在（HTTP 404）。由 DashboardRepo 抛出，供 RealtimeService 处理 fallback。"""
+
 # ES 8 服务不接受 compatible-with=9，用兼容头直接请求
 ES8_HEADERS = {
     "Accept": "application/vnd.elasticsearch+json;compatible-with=8",
@@ -319,3 +323,89 @@ class AlertRepo:
                 headers=ES8_HEADERS,
             )
             r.raise_for_status()
+
+
+# ---------------------------------------------------------------------------
+# Dashboard 专用 ES 仓储
+# ---------------------------------------------------------------------------
+
+
+class DashboardRepo:
+    """Dashboard 统计 ES 数据访问：封装聚合查询体，不含业务规则。"""
+
+    # 固定聚合模板（dashboard count 查询共用）
+    _AGG_TEMPLATE: dict = {
+        "dga_hits": {"filter": {"term": {"is_dga": True}}},
+        "family_dist": {"terms": {"field": "family.keyword", "size": 10}},
+    }
+
+    def __init__(self, es_base: str) -> None:
+        self._es_base = es_base
+
+    async def dashboard_count_aggs(self, target: str, query: dict) -> dict:
+        """Count + dga_hits + family_dist 聚合。
+
+        404 → 抛出 IndexNotFoundError；其他 HTTP 错误 → raise httpx.HTTPStatusError。
+        返回原始 ES JSON。
+        """
+        url = f"{self._es_base}/{target}/_search"
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.post(
+                url,
+                json={"size": 0, "query": query, "aggs": self._AGG_TEMPLATE},
+                headers=ES8_HEADERS,
+            )
+            if r.status_code == 404:
+                raise IndexNotFoundError(target)
+            r.raise_for_status()
+            return r.json()
+
+    async def qps_buckets(self, interval: str, granularity: str) -> list[dict]:
+        """返回给定时间窗口的 date_histogram buckets 列表。"""
+        wildcard = _events_index_wildcard()
+        body = {
+            "size": 0,
+            "query": {"range": {"timestamp": {"gte": interval}}},
+            "aggs": {
+                "per_bucket": {
+                    "date_histogram": {
+                        "field": "timestamp",
+                        "fixed_interval": granularity,
+                    },
+                    "aggs": {"hits": {"filter": {"term": {"is_dga": True}}}},
+                }
+            },
+        }
+        url = f"{self._es_base}/{wildcard}/_search"
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.post(url, json=body, headers=ES8_HEADERS)
+            r.raise_for_status()
+            return r.json()["aggregations"]["per_bucket"]["buckets"]
+
+    async def recent_dga_alerts(self, limit: int = 30) -> list[dict]:
+        """返回最近 DGA 告警（is_dga=True，按时间倒序），已格式化为 dict 列表。"""
+        wildcard = _events_index_wildcard()
+        body = {
+            "size": limit,
+            "query": {"term": {"is_dga": True}},
+            "sort": [{"timestamp": {"order": "desc"}}],
+            "_source": [
+                "domain", "score", "family", "severity", "timestamp", "event_id",
+            ],
+        }
+        url = f"{self._es_base}/{wildcard}/_search"
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.post(url, json=body, headers=ES8_HEADERS)
+            r.raise_for_status()
+            alerts: list[dict] = []
+            for hit in r.json().get("hits", {}).get("hits", []):
+                src = hit["_source"]
+                alerts.append({
+                    "event_id": src.get("event_id", hit["_id"]),
+                    "domain": src.get("domain", ""),
+                    "score": src.get("score", 0),
+                    "family": src.get("family", "unknown"),
+                    "severity": src.get("severity", "medium"),
+                    "timestamp": src.get("timestamp", ""),
+                })
+            return alerts
