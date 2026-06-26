@@ -264,7 +264,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile full up
 ```bash
 # 后端
 pip install -e ".[dev]"
-uvicorn gateway.main:app --reload --port 8000
+PYTHONPATH=src uvicorn business.main:app --reload --port 8000
 
 # 前端
 cd frontend && npm install && npm run dev
@@ -348,38 +348,40 @@ service ScoringService {
 ## 📂 项目结构
 
 ```text
-DGA/
-├── gateway/                    # API 网关（FastAPI）
-│   ├── main.py                 # 应用入口
-│   ├── routers/                # 路由（score, explain, alerts, models, dag, query, rag, health）
-│   ├── middleware/             # 中间件（auth, rate_limit, tracing, tenant, security）
-│   ├── schemas/                # Pydantic 数据模型
-│   └── tests/
-├── scoring_service/            # 评分服务
-│   ├── main.py                 # 服务入口
-│   ├── grpc_server.py          # gRPC 服务端
-│   ├── features/               # 特征提取（entropy, lexical, ngram, nxdomain）
-│   ├── models/                 # ML 模型（binary, multi, ensemble, registry）
-│   ├── drift.py                # 数据漂移检测（PSI）
-│   ├── proto/                  # Protobuf 定义与生成代码
-│   └── tests/
-├── dag_engine/                 # DAG 编排引擎（LangGraph）
-│   ├── engine.py               # StateGraph 编排核心
-│   ├── loader.py               # YAML Pipeline 加载器
-│   ├── runtime.py              # Stream / Batch 运行时
-│   ├── checkpoint.py           # Redis 断点续传
-│   ├── nodes/                  # 节点实现（ingest, transform, infer, filter, sink）
-│   ├── pipelines/              # YAML Pipeline 配置文件
-│   └── tests/
-├── agent_layer/                # Agent 智能层
-│   ├── agents/                 # 4 个 Agent（triage, explain, threat_intel, response）
-│   ├── a2a/                    # A2A 协议与 Redis 消息总线
-│   └── mcp/                    # MCP 工具服务（es_query, model_info, threat_intel）
-├── shared/                     # 公共模块
-│   ├── observability.py        # Prometheus 指标 + structlog + OpenTelemetry
-│   ├── config.py               # 全局配置
-│   ├── constants.py            # 常量定义
-│   └── schemas.py              # 共享数据模型
+dga-sentinel/
+├── src/                        # 所有 Python 源码（PYTHONPATH=src，pyproject package-dir=src）
+│   ├── common/                 # （原 shared/）公共模块
+│   │   ├── config.py  constants.py  observability.py  schemas.py
+│   │   ├── features/           # （原 scoring_service/features/）特征提取（entropy, lexical, ngram, nxdomain）
+│   │   └── utils/              # 通用工具（es_compat.py, time.py）
+│   ├── business/               # （原 gateway/）API 网关（FastAPI）
+│   │   ├── main.py             # 应用入口
+│   │   ├── api/                # （原 routers/）瘦路由，只做 HTTP（score, explain, alerts, models, dag, query, rag, health）
+│   │   ├── services/           # 业务编排（detection, alert, realtime, model, pipeline, report, agent_monitor, operations）
+│   │   ├── repositories/       # 数据访问（pg_repo, es_repo, starrocks_repo, scoring_client, model_repo, pipeline_repo, operations_repo, agent_client）
+│   │   ├── middleware/         # 中间件（auth, rate_limit, tracing, tenant, security）
+│   │   └── schemas/            # Pydantic 数据模型
+│   ├── ai/                     # AI 模块
+│   │   ├── scoring/            # （原 scoring_service/）评分服务
+│   │   │   ├── main.py         # 服务入口，HTTP /readyz + /models + /score
+│   │   │   ├── grpc_server.py  # gRPC 服务端
+│   │   │   ├── models/         # ML 模型（binary, multi, ensemble, registry）
+│   │   │   ├── drift.py        # 数据漂移检测（PSI）
+│   │   │   └── proto/          # Protobuf 定义与生成代码
+│   │   └── agents/             # （原 agent_layer/）LangGraph 多智能体
+│   │       ├── __main__.py     # 瘦入口
+│   │       ├── orchestrator.py # A2A 消息总线与 Agent 生命周期
+│   │       ├── pipeline.py  consumer.py  mcp_app.py  fc_bridge.py  fc_security.py
+│   │       ├── agents/         # 4 个 Agent（triage, explain, threat_intel, response）
+│   │       ├── a2a/            # A2A 协议与 Redis 消息总线
+│   │       └── mcp/            # MCP 工具服务（es_query, model_info, threat_intel）
+│   └── dag/                    # （原 dag_engine/）DAG 编排引擎（LangGraph）
+│       ├── engine.py           # StateGraph 编排核心
+│       ├── loader.py           # YAML Pipeline 加载器
+│       ├── runtime.py          # Stream / Batch 运行时
+│       ├── checkpoint.py       # Redis 断点续传
+│       ├── nodes/              # 节点实现（ingest, transform, infer, filter, sink）
+│       └── pipelines/          # YAML Pipeline 配置文件
 ├── frontend/                   # 前端（React 19 + TypeScript + Ant Design）
 │   └── src/
 │       ├── pages/              # 页面（Dashboard, Detection, Alerts, Models, Pipeline, Reports, AgentMonitor, Recommendations）
@@ -388,6 +390,8 @@ DGA/
 │       ├── services/           # API 调用层
 │       ├── hooks/              # 自定义 Hooks
 │       └── theme/              # 暗色主题
+├── legacy/                     # 旧 Flask 单体（app.py, predict.py, static/, templates/）
+├── research/                   # 训练/研究用（statistics/, dga_generate/ ~40 DGA 家族实现）
 ├── deploy/                     # 部署配置
 │   ├── grafana/                # Grafana 仪表盘与数据源
 │   ├── prometheus/             # Prometheus 采集配置
@@ -402,7 +406,7 @@ DGA/
 ├── docs/                       # 文档（architecture 架构图、screenshots 截图）
 ├── docker-compose.yml          # 生产编排
 ├── docker-compose.dev.yml      # 开发覆盖
-└── pyproject.toml              # Python 项目配置
+└── pyproject.toml              # Python 项目配置（package-dir = src，pythonpath = ["src"]）
 ```
 
 ---

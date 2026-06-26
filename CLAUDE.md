@@ -43,7 +43,12 @@ uv run ruff check .                 # lint
 uv run ruff format .                # format
 
 # Backend dev server (without Docker)
-uv run uvicorn gateway.main:app --reload --port 8000
+PYTHONPATH=src uv run uvicorn business.main:app --reload --port 8000
+
+# Other services (without Docker)
+PYTHONPATH=src uv run uvicorn ai.scoring.main:app --reload --port 8001
+PYTHONPATH=src uv run python -m dag.runtime
+PYTHONPATH=src uv run python -m ai.agents
 
 # Frontend dev
 cd frontend && npm install && npm run dev   # Vite dev server → http://localhost:5173
@@ -80,51 +85,64 @@ Full architecture and deployment diagrams: **docs/architecture-and-deployment.md
 ## Architecture
 
 ```
+src/                All Python source (PYTHONPATH=src; pyproject package-dir=src)
+  common/           (原 shared/) Config (pydantic-settings), constants, shared helpers
+    config.py  constants.py  observability.py  schemas.py
+    features/       (原 scoring_service/features/) lexical/entropy/ngram/nxdomain
+    utils/          es_compat.py (ES8_HEADERS), time.py (index naming)
+  business/         (原 gateway/) FastAPI REST/WS — JWT auth, rate-limit, scoring proxy, audit
+    main.py         App factory, middleware wiring
+    api/            (原 routers/) thin HTTP routers (score, explain, alerts, models, dag, query, rag, health)
+    services/       Business orchestration (detection/alert/realtime/model/pipeline/report/agent_monitor/operations)
+    repositories/   Data access (pg_repo/es_repo/starrocks_repo/scoring_client/model_repo/pipeline_repo/operations_repo/agent_client)
+    middleware/     Auth, rate-limit, tracing, tenant, security
+    schemas/        Pydantic request/response models
+  ai/               AI module
+    scoring/        (原 scoring_service/) XGBoost + TF CNN-Attention, gRPC + HTTP
+      main.py       HTTP /readyz + /models + /score
+      grpc_server.py  Protobuf service impl
+      models/       ML models (binary, multi, ensemble, registry)
+      drift.py      PSI-based model drift monitor
+      proto/        Protobuf definitions and generated code
+    agents/         (原 agent_layer/) LangGraph multi-agent
+      __main__.py   Thin entry point
+      orchestrator.py  Redis Pub/Sub A2A bus + agent lifecycle
+      pipeline.py  consumer.py  mcp_app.py  fc_bridge.py  fc_security.py
+      mcp/          MCP tool service (es_query, model_info, threat_intel)
+  dag/              (原 dag_engine/) LangGraph StateGraph pipeline orchestrator
+    engine.py       Graph builder, node registry
+    loader.py       YAML → StateGraph compiler
+    runtime.py      Kafka stream + file batch runtimes
+    checkpoint.py   Redis-backed LangGraph checkpointer
+    nodes/          Node impls (ingest/transform/infer/filter/sink)
+    pipelines/      4 YAML pipeline definitions (see below)
 frontend/           React 19 + TypeScript + Ant Design + Vite (nginx in container)
-gateway/            FastAPI REST/WS — JWT auth, rate-limit, scoring proxy, audit
-  main.py           App factory, routers, middleware
-  db.py             asyncpg pool + SQLAlchemy metadata
-  starrocks_client.py  MySQL-protocol OLAP client
-scoring_service/    gRPC server — XGBoost binary + TF CNN-Attention multi-class
-  main.py           HTTP /readyz + /models + /score
-  grpc_server.py    Protobuf service impl
-  drift.py          PSI-based model drift monitor
-dag_engine/         LangGraph StateGraph pipeline orchestrator
-  engine.py         Graph builder, node registry
-  loader.py         YAML → StateGraph compiler
-  runtime.py        Kafka stream + file batch runtimes
-  checkpoint.py     Redis-backed LangGraph checkpointer
-  pipelines/        4 YAML pipeline definitions (see below)
-agent_layer/        A2A multi-agent (triage, threat-intel, explain, response)
-  orchestrator.py   Redis Pub/Sub A2A bus + agent lifecycle
-  fc_bridge.py      LangChain function-calling bridge to MCP tools
-  fc_security.py    Tool-call security policy
-shared/             Config (pydantic-settings), constants, shared helpers
+legacy/             Old Flask monolith (app.py, predict.py, static/, templates/)
+research/           Training/research only (statistics/, dga_generate/ ~40 DGA family impls)
 scripts/            platform.sh, seed_data.py, setup_pipelines.py, simulate_traffic.py
-dga_generate/       ~40 reference DGA family implementations (research/training only)
 tests/
-  unit/             No-Docker unit tests (pytest)
+  unit/             No-Docker unit tests (pytest; pythonpath=["src"] in pyproject)
   integration/      Docker-stack integration tests
   e2e/              Full pipeline smoke (test_full_pipeline_real.py)
   playwright/       Browser automation tests
 ```
 
-Gateway → gRPC → Scoring Service for inference.
-DAG Engine consumes Kafka, calls Scoring via HTTP, writes to ES + StarRocks + Kafka alerts.
-Agent Layer subscribes to the alert Kafka topic, runs LangGraph chains, publishes responses via Redis Pub/Sub.
+business (API gateway) → gRPC → ai/scoring (Scoring Service) for inference.
+dag (DAG Engine) consumes Kafka, calls Scoring via HTTP, writes to ES + StarRocks + Kafka alerts.
+ai/agents (Agent Layer) subscribes to the alert Kafka topic, runs LangGraph chains, publishes responses via Redis Pub/Sub.
 
 ## Key Files
 
 ```
-gateway/main.py                              API entry point, all routers wired here
-scoring_service/main.py                      Model loading, /score HTTP + gRPC
-dag_engine/engine.py                         StateGraph builder and node dispatch
-dag_engine/loader.py                         YAML pipeline → LangGraph graph
-dag_engine/pipelines/dga_realtime.yaml       Production real-time pipeline
-dag_engine/pipelines/dga_batch.yaml          Batch scan pipeline
-dag_engine/pipelines/c2_realtime.yaml        C2 beacon detection pipeline
-dag_engine/pipelines/dns_tunnel.yaml         DNS tunneling detection pipeline
-agent_layer/orchestrator.py                  Multi-agent A2A bus orchestration
+src/business/main.py                         API entry point, all routers wired here
+src/ai/scoring/main.py                       Model loading, /score HTTP + gRPC
+src/dag/engine.py                            StateGraph builder and node dispatch
+src/dag/loader.py                            YAML pipeline → LangGraph graph
+src/dag/pipelines/dga_realtime.yaml          Production real-time pipeline
+src/dag/pipelines/dga_batch.yaml             Batch scan pipeline
+src/dag/pipelines/c2_realtime.yaml           C2 beacon detection pipeline
+src/dag/pipelines/dns_tunnel.yaml            DNS tunneling detection pipeline
+src/ai/agents/orchestrator.py                Multi-agent A2A bus orchestration
 scripts/platform.sh                          One-command platform lifecycle
 deploy/init-scripts/starrocks-tables.sql     StarRocks schema (CREATE IF NOT EXISTS)
 ```
@@ -174,7 +192,7 @@ All config via environment variables. Copy `.env.example` to `.env` before first
   **docs/troubleshooting.md §BE refuses tablet creation** to `be.conf` and restart BE.
 - **Elasticsearch flood-stage on small disks:** ES auto-marks every index `read_only_allow_delete`
   when host disk crosses 95%. Mitigation in **docs/troubleshooting.md §ES indices red**.
-- **`StarRocksSinkNode` is currently a stub** (`dag_engine/nodes/sink/starrocks_sink.py`): it logs
+- **`StarRocksSinkNode` is currently a stub** (`src/dag/nodes/sink/starrocks_sink.py`): it logs
   but does not actually write. Real-time pipelines do not populate StarRocks; only `seed_data.py`'s
   `seed_starrocks()` does. To enable streaming writes, implement Stream Load HTTP in that node.
 - **`platform.sh seed` blocks on Gateway readyz check** even when Gateway is fine. If you hit
