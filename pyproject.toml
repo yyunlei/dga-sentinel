@@ -61,7 +61,8 @@ agents = [
     "langchain>=0.3.0",
     "langchain-openai>=0.3.0",
     "langchain-elasticsearch>=0.3.0",
-    "sentence-transformers>=3.0.0",  # RAG embedding(运行时,保守保留)
+    "sentence-transformers>=3.0.0",  # RAG embedding(运行时)
+    "pymysql>=1.1.0",                # Text2SQL 经 MySQL 协议查 StarRocks
 ]
 dev = [
     "pytest>=8.3.0",

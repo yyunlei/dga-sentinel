@@ -30,7 +30,11 @@ class Text2SQLEngine:
         if error:
             return {"sql": sql, "data": [], "explanation": "", "error": error}
 
-        data = await self._execute_sql(sql)
+        try:
+            data = await self._execute_sql(sql)
+        except Exception as e:
+            # 不再把执行失败伪装成「0 条结果」——把真实错误带回 UI
+            return {"sql": sql, "data": [], "explanation": f"查询执行失败: {e}", "error": "execution_failed"}
         explanation = await self._explain_result(question, sql, data)
         return {"sql": sql, "data": data, "explanation": explanation}
 
@@ -119,7 +123,7 @@ class Text2SQLEngine:
                     await conn.close()
         except Exception as e:
             logger.error("text2sql_execute_error", error=str(e))
-            return []
+            raise
 
     async def _explain_result(self, question: str, sql: str, data: list) -> str:
         settings = get_settings()
