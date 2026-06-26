@@ -4,7 +4,6 @@ Agent 监控路由 — /agents/metrics, /agents/exec-history, /agents/a2a-messag
 """
 from __future__ import annotations
 
-import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 

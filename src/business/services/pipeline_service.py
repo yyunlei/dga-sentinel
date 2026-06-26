@@ -18,7 +18,7 @@ import yaml
 from business.repositories.pipeline_repo import PipelineRepo
 from business.services.node_schemas import NODE_CONFIG_SCHEMAS
 from common.config import get_settings
-from common.constants import ES_INDEX_EVENTS
+from common.utils.time import events_index_wildcard
 
 
 # ---------------------------------------------------------------------------
@@ -206,7 +206,7 @@ class PipelineService:
                 "by_severity": {"terms": {"field": "severity.keyword", "size": 5}},
             },
         }
-        resp = await self._repo.get_es_pipeline_stats(f"{ES_INDEX_EVENTS}-*", es_body)
+        resp = await self._repo.get_es_pipeline_stats(events_index_wildcard(), es_body)
         if resp:
             aggs = resp.get("aggregations", {})
             for b in aggs.get("by_pipeline", {}).get("buckets", []):

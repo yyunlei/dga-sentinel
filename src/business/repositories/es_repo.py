@@ -5,29 +5,13 @@
 from __future__ import annotations
 
 import httpx
-from datetime import datetime, timezone
 
-from common.constants import ES_INDEX_EVENTS
+from common.utils.es_compat import ES8_HEADERS
+from common.utils.time import events_index_wildcard
 
 
 class IndexNotFoundError(Exception):
     """目标 ES 索引不存在（HTTP 404）。由 DashboardRepo 抛出，供 RealtimeService 处理 fallback。"""
-
-# ES 8 服务不接受 compatible-with=9，用兼容头直接请求
-ES8_HEADERS = {
-    "Accept": "application/vnd.elasticsearch+json;compatible-with=8",
-    "Content-Type": "application/vnd.elasticsearch+json;compatible-with=8",
-}
-
-
-def _events_index_today() -> str:
-    """当日索引名（score 写入用）"""
-    return f"{ES_INDEX_EVENTS}-{datetime.now(timezone.utc).strftime('%Y.%m.%d')}"
-
-
-def _events_index_wildcard() -> str:
-    """通配符索引名，查询跨多天数据"""
-    return f"{ES_INDEX_EVENTS}-*"
 
 
 def _build_filter_query(
@@ -139,7 +123,7 @@ class AlertRepo:
             start_time=start_time,
             end_time=end_time,
         )
-        url = f"{self._es_base}/{_events_index_wildcard()}/_search"
+        url = f"{self._es_base}/{events_index_wildcard()}/_search"
         async with httpx.AsyncClient(timeout=10.0) as client:
             r = await client.post(
                 url,
@@ -218,7 +202,7 @@ class AlertRepo:
                 "total_unique_domains": {"cardinality": {"field": "domain.keyword"}},
             },
         }
-        url = f"{self._es_base}/{_events_index_wildcard()}/_search"
+        url = f"{self._es_base}/{events_index_wildcard()}/_search"
         async with httpx.AsyncClient(timeout=10.0) as client:
             r = await client.post(url, json=body, headers=ES8_HEADERS)
             r.raise_for_status()
@@ -230,7 +214,7 @@ class AlertRepo:
 
     async def acknowledge_by_domain(self, domains: list[str]) -> int:
         """返回已更新的文档数。"""
-        url = f"{self._es_base}/{_events_index_wildcard()}/_update_by_query"
+        url = f"{self._es_base}/{events_index_wildcard()}/_update_by_query"
         async with httpx.AsyncClient(timeout=10.0) as client:
             r = await client.post(
                 url,
@@ -256,7 +240,7 @@ class AlertRepo:
 
     async def alert_stats(self) -> dict:
         """返回包含 aggregations 的原始 ES 响应 dict。"""
-        wildcard = _events_index_wildcard()
+        wildcard = events_index_wildcard()
         body = {
             "size": 0,
             "query": {"match_all": {}},
@@ -295,7 +279,7 @@ class AlertRepo:
 
     async def get_alert(self, event_id: str) -> dict | None:
         """返回 _source dict 或 None（不存在时）。"""
-        url = f"{self._es_base}/{_events_index_wildcard()}/_search"
+        url = f"{self._es_base}/{events_index_wildcard()}/_search"
         async with httpx.AsyncClient(timeout=10.0) as client:
             r = await client.post(
                 url,
@@ -312,7 +296,7 @@ class AlertRepo:
 
     async def acknowledge_alert(self, event_id: str) -> None:
         """通过 update_by_query 将单条告警标记为已确认。"""
-        url = f"{self._es_base}/{_events_index_wildcard()}/_update_by_query"
+        url = f"{self._es_base}/{events_index_wildcard()}/_update_by_query"
         async with httpx.AsyncClient(timeout=10.0) as client:
             r = await client.post(
                 url,
@@ -362,7 +346,7 @@ class DashboardRepo:
 
     async def qps_buckets(self, interval: str, granularity: str) -> list[dict]:
         """返回给定时间窗口的 date_histogram buckets 列表。"""
-        wildcard = _events_index_wildcard()
+        wildcard = events_index_wildcard()
         body = {
             "size": 0,
             "query": {"range": {"timestamp": {"gte": interval}}},
@@ -384,7 +368,7 @@ class DashboardRepo:
 
     async def recent_dga_alerts(self, limit: int = 30) -> list[dict]:
         """返回最近 DGA 告警（is_dga=True，按时间倒序），已格式化为 dict 列表。"""
-        wildcard = _events_index_wildcard()
+        wildcard = events_index_wildcard()
         body = {
             "size": limit,
             "query": {"term": {"is_dga": True}},
@@ -424,7 +408,7 @@ class ReportRepo:
 
     async def query_trend(self, date_range_filter: dict) -> dict:
         """每日趋势聚合（date_histogram + DGA 命中子聚合）。返回原始 ES JSON。"""
-        wildcard = _events_index_wildcard()
+        wildcard = events_index_wildcard()
         body = {
             "size": 0,
             "query": date_range_filter,
@@ -443,7 +427,7 @@ class ReportRepo:
 
     async def query_top_domains(self, date_range_filter: dict) -> dict:
         """Top 10 DGA 域名聚合（terms on domain.keyword）。返回原始 ES JSON。"""
-        wildcard = _events_index_wildcard()
+        wildcard = events_index_wildcard()
         body = {
             "size": 0,
             "query": {"bool": {"must": [
@@ -460,7 +444,7 @@ class ReportRepo:
 
     async def query_top_hosts(self, date_range_filter: dict) -> dict:
         """Top 10 受影响主机聚合（terms on src_ip.keyword + 唯一域名基数）。返回原始 ES JSON。"""
-        wildcard = _events_index_wildcard()
+        wildcard = events_index_wildcard()
         body = {
             "size": 0,
             "query": {"bool": {"must": [
@@ -482,7 +466,7 @@ class ReportRepo:
 
     async def query_heatmap(self, date_range_filter: dict) -> dict:
         """热力图聚合（date_histogram by hour，用于 hour_of_day × day_of_week 矩阵）。返回原始 ES JSON。"""
-        wildcard = _events_index_wildcard()
+        wildcard = events_index_wildcard()
         body = {
             "size": 0,
             "query": date_range_filter,

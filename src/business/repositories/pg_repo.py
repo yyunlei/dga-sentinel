@@ -11,6 +11,7 @@ import redis.asyncio as aioredis
 
 from common.config import get_settings
 from common.observability import get_logger
+from common.utils.es_compat import ES8_HEADERS
 
 logger = get_logger(__name__)
 
@@ -37,10 +38,7 @@ async def init_db(app: FastAPI) -> None:
         app.state.es_client = AsyncElasticsearch(
             hosts=settings.es_hosts.split(","),
             request_timeout=10,
-            headers={
-                "Accept": "application/vnd.elasticsearch+json;compatible-with=8",
-                "Content-Type": "application/vnd.elasticsearch+json;compatible-with=8",
-            },
+            headers=ES8_HEADERS,
         )
         logger.info("es_client_created")
     except Exception as e:

@@ -5,22 +5,14 @@
 """
 from __future__ import annotations
 
-import asyncio
-import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from business.middleware.rbac import require_viewer
 from common.config import get_settings
-from common.constants import ES_INDEX_EVENTS
 from common.observability import get_logger
 
 router = APIRouter()
 logger = get_logger(__name__)
-
-_ES_V8_HEADERS = {
-    "Accept": "application/vnd.elasticsearch+json;compatible-with=8",
-    "Content-Type": "application/vnd.elasticsearch+json;compatible-with=8",
-}
 
 
 @router.get("/reports/stats", dependencies=[Depends(require_viewer)])

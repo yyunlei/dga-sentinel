@@ -12,9 +12,6 @@ pending 推荐暴露给分析师，让他们 acknowledge / dismiss。
 
 from __future__ import annotations
 
-import json
-from typing import Any
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 

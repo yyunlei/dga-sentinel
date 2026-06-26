@@ -13,10 +13,10 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 
-from common.constants import ES_INDEX_EVENTS
 from common.observability import get_logger
+from common.utils.time import events_index_today, events_index_wildcard
 
 logger = get_logger(__name__)
 
@@ -93,9 +93,8 @@ class RealtimeService:
         """从 ES 聚合查询 dashboard 统计数据"""
         from business.repositories.es_repo import IndexNotFoundError
 
-        now = datetime.now(timezone.utc)
-        today_index = f"{ES_INDEX_EVENTS}-{now.strftime('%Y.%m.%d')}"
-        wildcard_index = f"{ES_INDEX_EVENTS}-*"
+        today_index = events_index_today()
+        wildcard_index = events_index_wildcard()
 
         # 1) 总量 + DGA 命中 + 家族分布
         # 三级 fallback：今日索引 → wildcard 24h → wildcard 30d

@@ -13,17 +13,13 @@ import httpx
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from jose import JWTError, jwt
 from common.config import get_settings
-from common.constants import ES_INDEX_EVENTS
 from common.observability import get_logger
+from common.utils.es_compat import ES8_HEADERS
+from common.utils.time import events_index_wildcard
 
 logger = get_logger(__name__)
 
 router = APIRouter()
-
-_ES_V8_HEADERS = {
-    "Accept": "application/vnd.elasticsearch+json;compatible-with=8",
-    "Content-Type": "application/vnd.elasticsearch+json;compatible-with=8",
-}
 
 # Connected WebSocket clients
 _clients: set[WebSocket] = set()
@@ -36,7 +32,7 @@ async def _send_recent_alerts(websocket: WebSocket, limit: int = 50, min_score: 
     """
     settings = get_settings()
     es_base = settings.es_hosts.split(",")[0].strip()
-    url = f"{es_base}/{ES_INDEX_EVENTS}-*/_search"
+    url = f"{es_base}/{events_index_wildcard()}/_search"
     body = {
         "query": {"range": {"score": {"gte": min_score}}},
         "sort": [{"timestamp": "desc"}],
@@ -48,7 +44,7 @@ async def _send_recent_alerts(websocket: WebSocket, limit: int = 50, min_score: 
     }
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            r = await client.post(url, json=body, headers=_ES_V8_HEADERS)
+            r = await client.post(url, json=body, headers=ES8_HEADERS)
             r.raise_for_status()
             hits = r.json().get("hits", {}).get("hits", [])
     except Exception as e:
