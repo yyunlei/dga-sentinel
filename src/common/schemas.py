@@ -64,6 +64,13 @@ class ScoreResponse(BaseModel):
 # ── 告警事件 ──────────────────────────────────────────
 
 class DGAEvent(BaseModel):
+    """dag→agents Kafka 告警(topic: dga-alerts)与事件 sink 的规范契约。
+
+    DAG 引擎(KafkaSinkNode)序列化此模型发布告警,
+    Agent 层(alert consumer)用 model_validate 校验后消费,
+    两端共享同一显式 schema,禁止裸 dict 跨越此边界。
+    """
+
     trace_id: str = Field(default_factory=lambda: uuid4().hex)
     event_id: str = Field(default_factory=lambda: uuid4().hex)
     timestamp: datetime = Field(default_factory=datetime.utcnow)

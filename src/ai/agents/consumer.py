@@ -11,6 +11,7 @@ import asyncio
 import json
 
 from common.observability import get_logger
+from common.schemas import DGAEvent
 from ai.agents.pipeline import _bounded_pipeline, get_orchestrator
 
 logger = get_logger(__name__)
@@ -54,18 +55,22 @@ async def run_alert_consumer():
 
     try:
         async for msg in consumer:
-            event = msg.value or {}
-            domain = event.get("domain", "")
-            if not domain:
+            raw = msg.value or {}
+            try:
+                alert = DGAEvent.model_validate(raw)
+            except Exception as exc:
+                logger.warning("alert_consumer_invalid_event", error=str(exc))
                 continue
-            trace_id = event.get("trace_id") or event.get("event_id") or ""
+            if not alert.domain:
+                continue
+            trace_id = alert.trace_id or alert.event_id or ""
             payload = {
-                "domain": domain,
-                "src_ip": event.get("src_ip", ""),
-                "score": event.get("score", 0.0),
-                "family": event.get("family"),
-                "severity": event.get("severity", "LOW"),
-                "event_id": event.get("event_id", ""),
+                "domain": alert.domain,
+                "src_ip": alert.src_ip,
+                "score": alert.score,
+                "family": alert.family,
+                "severity": alert.severity.value,
+                "event_id": alert.event_id,
             }
             asyncio.create_task(_bounded_pipeline(payload, trace_id))
     except asyncio.CancelledError:
