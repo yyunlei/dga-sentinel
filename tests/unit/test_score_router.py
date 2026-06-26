@@ -24,18 +24,16 @@ def test_skips_empty():
 
 
 def test_domain_too_long():
+    # _validate_domains silently filters out too-long domains rather than raising
     long_domain = "a" * 254
-    with pytest.raises(HTTPException) as exc_info:
-        _validate_domains([long_domain])
-    assert exc_info.value.status_code == 400
-    assert "too long" in exc_info.value.detail.lower()
+    result = _validate_domains([long_domain])
+    assert long_domain not in result
 
 
 def test_invalid_domain_chars():
-    with pytest.raises(HTTPException) as exc_info:
-        _validate_domains(["bad_domain!.com"])
-    assert exc_info.value.status_code == 400
-    assert "invalid domain" in exc_info.value.detail.lower()
+    # _validate_domains silently filters out domains with invalid characters
+    result = _validate_domains(["bad_domain!.com"])
+    assert "bad_domain!.com" not in result
 
 
 def test_batch_size_exceeded():

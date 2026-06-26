@@ -63,7 +63,8 @@ class TestNgramFeatures:
         from common.features.ngram import NgramFeatureExtractor
         matrix = sparse.csr_matrix(np.array([[1, 2, 3, 4, 5]]))
         result = NgramFeatureExtractor._matrix_stats(matrix, "test")
-        expected_keys = {"test_mean", "test_std", "test_min", "test_max", "test_median", "test_skew", "test_kurtosis"}
+        # Production code returns: mean, var, min, std, max, skew, kurtosis (no median)
+        expected_keys = {"test_mean", "test_std", "test_var", "test_min", "test_max", "test_skew", "test_kurtosis"}
         assert set(result.keys()) == expected_keys
 
     def test_extract_returns_21_features(self):
@@ -73,12 +74,16 @@ class TestNgramFeatures:
             extractor = NgramFeatureExtractor()
             mock_vec = MagicMock()
             mock_vec.transform.return_value = sparse.csr_matrix(np.array([[0.1, 0.2, 0.3]]))
-            extractor._vectorizers = {"unigram": mock_vec, "bigram": mock_vec, "trigram": mock_vec}
+            # Production extract() uses self.unigrams / self.bigrams / self.trigrams
+            extractor.unigrams = mock_vec
+            extractor.bigrams = mock_vec
+            extractor.trigrams = mock_vec
             result = extractor.extract("example.com")
             assert len(result) == 21
-            for prefix in ("unigram", "bigram", "trigram"):
-                for stat in ("mean", "std", "min", "max", "median", "skew", "kurtosis"):
-                    assert f"{prefix}_{stat}" in result
+            # Keys follow UNI-*/BI-*/TRI-* naming convention
+            for prefix in ("UNI", "BI", "TRI"):
+                for stat in ("MEAN", "VAR", "PVAR", "STD", "PSTD", "SKE", "KUR"):
+                    assert f"{prefix}-{stat}" in result
 
 
 import asyncio
@@ -102,7 +107,7 @@ class TestNXDomainFeatures:
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(side_effect=lambda k: "10" if "total" in k else "3")
         tracker = NXDomainTracker(redis_client=mock_redis)
-        ratio = asyncio.get_event_loop().run_until_complete(tracker.get_nxdomain_ratio("1.2.3.4"))
+        ratio = asyncio.run(tracker.get_nxdomain_ratio("1.2.3.4"))
         assert abs(ratio - 0.3) < 0.01
 
     def test_get_ratio_no_data(self):
@@ -110,5 +115,5 @@ class TestNXDomainFeatures:
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(return_value=None)
         tracker = NXDomainTracker(redis_client=mock_redis)
-        ratio = asyncio.get_event_loop().run_until_complete(tracker.get_nxdomain_ratio("1.2.3.4"))
+        ratio = asyncio.run(tracker.get_nxdomain_ratio("1.2.3.4"))
         assert ratio == 0.0

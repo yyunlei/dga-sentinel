@@ -11,32 +11,32 @@ class TestCheckpointManager:
         redis = AsyncMock()
         redis.get.return_value = b"42"
         mgr = CheckpointManager(redis_client=redis, key_prefix="test:")
-        asyncio.get_event_loop().run_until_complete(mgr.save_offset("topic1", 0, 42))
+        asyncio.run(mgr.save_offset("topic1", 0, 42))
         redis.set.assert_called_once()
-        offset = asyncio.get_event_loop().run_until_complete(mgr.get_offset("topic1", 0))
+        offset = asyncio.run(mgr.get_offset("topic1", 0))
         assert offset == 42
 
     def test_get_offset_none(self):
         redis = AsyncMock()
         redis.get.return_value = None
         mgr = CheckpointManager(redis_client=redis, key_prefix="test:")
-        offset = asyncio.get_event_loop().run_until_complete(mgr.get_offset("topic1", 0))
+        offset = asyncio.run(mgr.get_offset("topic1", 0))
         assert offset is None
 
     def test_idempotency_check(self):
         redis = AsyncMock()
         redis.exists.return_value = True
         mgr = CheckpointManager(redis_client=redis, key_prefix="test:")
-        assert asyncio.get_event_loop().run_until_complete(mgr.is_processed("evt-1")) is True
+        assert asyncio.run(mgr.is_processed("evt-1")) is True
 
     def test_mark_processed(self):
         redis = AsyncMock()
         mgr = CheckpointManager(redis_client=redis, key_prefix="test:")
-        asyncio.get_event_loop().run_until_complete(mgr.mark_processed("evt-1", ttl=3600))
+        asyncio.run(mgr.mark_processed("evt-1", ttl=3600))
         redis.set.assert_called_once()
 
     def test_no_redis_graceful(self):
         mgr = CheckpointManager(redis_client=None)
-        asyncio.get_event_loop().run_until_complete(mgr.save_offset("t", 0, 1))
-        assert asyncio.get_event_loop().run_until_complete(mgr.get_offset("t", 0)) is None
-        assert asyncio.get_event_loop().run_until_complete(mgr.is_processed("x")) is False
+        asyncio.run(mgr.save_offset("t", 0, 1))
+        assert asyncio.run(mgr.get_offset("t", 0)) is None
+        assert asyncio.run(mgr.is_processed("x")) is False

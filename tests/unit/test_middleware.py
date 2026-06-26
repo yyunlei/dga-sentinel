@@ -45,12 +45,15 @@ async def test_rate_limiter_custom_limit():
 
 @pytest.mark.asyncio
 async def test_verify_token_dev_mode_no_credentials():
-    """开发模式下无 token 返回默认 payload"""
+    """开发模式下无 token 返回默认 payload（含 role: admin）"""
+    import os
     with patch("business.middleware.auth.get_settings") as mock_settings:
         mock_settings.return_value = MagicMock(is_dev=True)
-        from business.middleware.auth import verify_token
-        result = await verify_token(credentials=None)
-        assert result == {"sub": "dev", "tenant_id": "default"}
+        # Ensure ALLOW_DEV_AUTH is set to "true" so the dev-mode branch is taken
+        with patch.dict(os.environ, {"ALLOW_DEV_AUTH": "true"}):
+            from business.middleware.auth import verify_token
+            result = await verify_token(credentials=None)
+            assert result == {"sub": "dev", "tenant_id": "default", "role": "admin"}
 
 
 @pytest.mark.asyncio

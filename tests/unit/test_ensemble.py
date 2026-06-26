@@ -1,10 +1,19 @@
 """EnsembleScorer 单元测试"""
 
+import importlib.util
 import pytest
 from unittest.mock import MagicMock
 
-joblib = pytest.importorskip("joblib")
-from ai.scoring.models.ensemble import EnsembleScorer, ScoringResult
+pytestmark = pytest.mark.skipif(
+    importlib.util.find_spec("tensorflow") is None,
+    reason="needs tensorflow (no Intel-Mac wheel; runs in CI/Docker)",
+)
+
+if importlib.util.find_spec("tensorflow") is not None:
+    from ai.scoring.models.ensemble import EnsembleScorer, ScoringResult
+else:
+    EnsembleScorer = None  # type: ignore[assignment,misc]
+    ScoringResult = None  # type: ignore[assignment,misc]
 
 
 class TestEnsembleScorer:

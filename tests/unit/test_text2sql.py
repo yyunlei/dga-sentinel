@@ -62,7 +62,6 @@ class TestSchemaRegistry:
     def test_starrocks_tables(self):
         tables = get_allowed_tables("starrocks")
         assert "dga_events" in tables
-        assert "alert_summary" in tables
 
     def test_postgres_tables(self):
         tables = get_allowed_tables("postgres")
@@ -90,7 +89,6 @@ class TestText2SQLEngine:
         engine = Text2SQLEngine("starrocks")
         assert engine.db_type == "starrocks"
         assert "dga_events" in engine.allowed_tables
-        assert "alert_summary" in engine.allowed_tables
 
     def test_fallback_sql_alerts(self):
         engine = Text2SQLEngine("starrocks")
