@@ -75,9 +75,9 @@ def client(_patch_lifespan):
 class TestFullPipeline:
     """E2E: domain submit → score → alert → agent explain → display."""
 
-    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
-    @patch("business.routers.score.get_redis_client", return_value=None)
-    @patch("business.routers.score.get_es_client", return_value=None)
+    @patch("business.api.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
+    @patch("business.api.score.get_redis_client", return_value=None)
+    @patch("business.api.score.get_es_client", return_value=None)
     @patch("httpx.AsyncClient.post")
     def test_score_returns_results(self, mock_post, _es, _redis, _sr, client):
         """POST /api/score returns score results for a valid domain."""
@@ -95,9 +95,9 @@ class TestFullPipeline:
         assert len(body["results"]) >= 1
         assert body["results"][0]["domain"] == "evil123.xyz"
 
-    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
-    @patch("business.routers.score.get_redis_client", return_value=None)
-    @patch("business.routers.score.get_es_client", return_value=None)
+    @patch("business.api.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
+    @patch("business.api.score.get_redis_client", return_value=None)
+    @patch("business.api.score.get_es_client", return_value=None)
     @patch("httpx.AsyncClient.post")
     def test_score_high_triggers_alert_fields(self, mock_post, _es, _redis, _sr, client):
         """High-score domain result contains severity-relevant fields."""
@@ -112,12 +112,12 @@ class TestFullPipeline:
         assert result["is_dga"] is True
         assert result["score"] >= 0.7
 
-    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
+    @patch("business.api.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
     @patch("httpx.AsyncClient.post")
     def test_cache_hit_skips_scoring_service(self, mock_post, _sr, _patch_lifespan):
         """Cached domain should be returned without calling scoring service."""
         from fastapi.testclient import TestClient
-        from business.db import get_es_client, get_redis_client
+        from business.repositories.pg_repo import get_es_client, get_redis_client
 
         cached_result = {
             "domain": "cached.xyz",
@@ -152,7 +152,7 @@ class TestFullPipeline:
             resp = client.post("/api/score", json={"domains": ["test.com"]})
             assert resp.status_code in (401, 403)
 
-    @patch("business.routers.explain._fallback_explanation", return_value="fallback explanation")
+    @patch("business.api.explain._fallback_explanation", return_value="fallback explanation")
     @patch("ai.agents.agents.explain_agent.ExplainAgent.run", new_callable=AsyncMock)
     def test_explain_endpoint_calls_agent(self, mock_agent_run, _fb, client):
         """POST /api/explain invokes ExplainAgent and returns explanation."""
@@ -173,9 +173,9 @@ class TestFullPipeline:
         assert body["domain"] == "evil123.xyz"
         assert "explanation" in body
 
-    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
-    @patch("business.routers.score.get_redis_client", return_value=None)
-    @patch("business.routers.score.get_es_client", return_value=None)
+    @patch("business.api.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
+    @patch("business.api.score.get_redis_client", return_value=None)
+    @patch("business.api.score.get_es_client", return_value=None)
     @patch("httpx.AsyncClient.post")
     def test_score_response_contains_trace_id(self, mock_post, _es, _redis, _sr, client):
         """Score response must include a trace_id field."""

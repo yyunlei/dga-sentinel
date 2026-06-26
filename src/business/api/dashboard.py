@@ -12,7 +12,7 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from business.db import get_es_client, get_redis_client
+from business.repositories.pg_repo import get_es_client, get_redis_client
 from business.middleware.rbac import require_analyst
 from common.config import get_settings
 from common.constants import ES_INDEX_EVENTS

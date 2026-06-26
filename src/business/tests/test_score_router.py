@@ -5,7 +5,7 @@ business/routers/score.py 域名校验单元测试
 import pytest
 from fastapi import HTTPException
 
-from business.routers.score import _validate_domains
+from business.api.score import _validate_domains
 
 
 def test_valid_domains():

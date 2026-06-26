@@ -240,7 +240,7 @@ class TestPipelineCRUD:
         """POST /api/dag/pipelines 创建新 pipeline"""
         mock_pg = AsyncMock()
         mock_pg.execute = AsyncMock()
-        pipeline_app.dependency_overrides[__import__("business.db", fromlist=["get_pg_pool"]).get_pg_pool] = lambda: mock_pg
+        pipeline_app.dependency_overrides[__import__("business.repositories.pg_repo", fromlist=["get_pg_pool"]).get_pg_pool] = lambda: mock_pg
 
         client = TestClient(pipeline_app)
         resp = client.post(
@@ -258,7 +258,7 @@ class TestPipelineCRUD:
 
     def test_list_pipelines_fallback(self, pipeline_app, admin_token):
         """GET /api/dag/pipelines 无 PG 时走 YAML 文件回退"""
-        from business.db import get_pg_pool
+        from business.repositories.pg_repo import get_pg_pool
         pipeline_app.dependency_overrides[get_pg_pool] = lambda: None
 
         client = TestClient(pipeline_app)
@@ -280,7 +280,7 @@ class TestPipelineCRUD:
             "name": "test", "mode": "stream", "version": "2", "status": "active",
         })
         mock_pg.execute = AsyncMock()
-        from business.db import get_pg_pool
+        from business.repositories.pg_repo import get_pg_pool
         pipeline_app.dependency_overrides[get_pg_pool] = lambda: mock_pg
 
         valid_yaml = "nodes:\n  - id: ingest\n    type: kafka_consumer\n    config:\n      topic: test"
@@ -304,7 +304,7 @@ class TestPipelineCRUD:
         })
         mock_pg.fetchval = AsyncMock(return_value=3)
         mock_pg.execute = AsyncMock()
-        from business.db import get_pg_pool
+        from business.repositories.pg_repo import get_pg_pool
         pipeline_app.dependency_overrides[get_pg_pool] = lambda: mock_pg
 
         client = TestClient(pipeline_app)

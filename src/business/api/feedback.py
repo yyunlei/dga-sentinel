@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from business.db import get_pg_pool
+from business.repositories.pg_repo import get_pg_pool
 from business.middleware.rate_limit import rate_limit_check
 from business.middleware.auth import verify_token
 from business.middleware.rbac import require_analyst

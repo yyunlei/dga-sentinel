@@ -17,7 +17,7 @@ from fastapi.testclient import TestClient
 from jose import jwt
 
 from common.config import get_settings
-from business.db import get_es_client, get_redis_client
+from business.repositories.pg_repo import get_es_client, get_redis_client
 
 
 # ── Fixtures ──────────────────────────────────────────────
@@ -123,7 +123,7 @@ class TestCacheKeyFormat:
 class TestScoringCacheIntegration:
     """End-to-end: score → cache write → cache hit on repeat."""
 
-    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock)
+    @patch("business.api.score.write_events_to_starrocks", new_callable=AsyncMock)
     @patch("httpx.AsyncClient.post")
     def test_first_request_calls_scoring_service(
         self, mock_http_post, mock_sr,
@@ -147,7 +147,7 @@ class TestScoringCacheIntegration:
         assert data["results"][0]["domain"] == "evil.com"
         mock_http_post.assert_called_once()
 
-    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock)
+    @patch("business.api.score.write_events_to_starrocks", new_callable=AsyncMock)
     @patch("httpx.AsyncClient.post")
     def test_cached_result_skips_scoring_service(
         self, mock_http_post, mock_sr,
@@ -177,7 +177,7 @@ class TestScoringCacheIntegration:
     def test_cache_ttl_is_300(self):
         """Verify the TTL constant used in score.py is 300."""
         import inspect
-        from business.routers import score as score_mod
+        from business.api import score as score_mod
         source = inspect.getsource(score_mod)
         assert "ex=300" in source
 
@@ -185,7 +185,7 @@ class TestScoringCacheIntegration:
 class TestCacheWriteOnScore:
     """Verify that scoring writes to Redis with correct key and TTL."""
 
-    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock)
+    @patch("business.api.score.write_events_to_starrocks", new_callable=AsyncMock)
     @patch("httpx.AsyncClient.post")
     def test_score_writes_cache_entry(
         self, mock_http_post, mock_sr,

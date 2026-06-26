@@ -18,7 +18,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from business.db import get_pg_pool
+from business.repositories.pg_repo import get_pg_pool
 from business.middleware.auth import verify_token
 from business.middleware.rbac import require_analyst
 from common.observability import get_logger

@@ -23,8 +23,8 @@ from common.observability import SCORE_REQUESTS
 from business.middleware.rate_limit import rate_limit_check
 from business.middleware.auth import verify_token
 from business.middleware.rbac import require_analyst
-from business.db import get_es_client, get_redis_client
-from business.starrocks_client import write_events_to_starrocks
+from business.repositories.pg_repo import get_es_client, get_redis_client
+from business.repositories.starrocks_repo import write_events_to_starrocks
 
 router = APIRouter()
 

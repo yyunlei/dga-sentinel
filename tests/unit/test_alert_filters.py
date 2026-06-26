@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import pytest
 
-from business.routers.alerts import _build_filter_query, _SEVERITY_PRIORITY
+from business.api.alerts import _build_filter_query, _SEVERITY_PRIORITY
 
 
 # ---------------------------------------------------------------------------

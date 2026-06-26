@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from elasticsearch import AsyncElasticsearch
 
-from business.db import get_es_client
+from business.repositories.pg_repo import get_es_client
 from business.middleware.rbac import require_analyst, require_write
 from common.config import get_settings
 from common.constants import ES_INDEX_EVENTS

@@ -144,9 +144,9 @@ class TestJWTAuth:
 class TestRBAC:
     """Role-based access control."""
 
-    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
-    @patch("business.routers.score.get_redis_client", return_value=None)
-    @patch("business.routers.score.get_es_client", return_value=None)
+    @patch("business.api.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
+    @patch("business.api.score.get_redis_client", return_value=None)
+    @patch("business.api.score.get_es_client", return_value=None)
     @patch("httpx.AsyncClient.post")
     def test_admin_can_post_score(self, mock_post, _es, _redis, _sr, client):
         """Admin role should be able to POST /api/score."""

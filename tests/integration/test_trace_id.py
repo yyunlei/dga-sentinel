@@ -63,9 +63,9 @@ class TestTraceIdPropagation:
         trace_id = resp.headers.get("X-Trace-ID", "")
         assert _HEX_RE.match(trace_id), f"trace_id not hex: {trace_id}"
 
-    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
-    @patch("business.routers.score.get_redis_client", return_value=None)
-    @patch("business.routers.score.get_es_client", return_value=None)
+    @patch("business.api.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
+    @patch("business.api.score.get_redis_client", return_value=None)
+    @patch("business.api.score.get_es_client", return_value=None)
     @patch("httpx.AsyncClient.post")
     def test_trace_id_in_score_response(self, mock_post, _es, _redis, _sr, client):
         """Score response body should contain the same trace_id as the header."""
@@ -81,9 +81,9 @@ class TestTraceIdPropagation:
         assert header_trace, "X-Trace-ID header missing"
         assert body_trace, "trace_id missing from response body"
 
-    @patch("business.routers.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
-    @patch("business.routers.score.get_redis_client", return_value=None)
-    @patch("business.routers.score.get_es_client", return_value=None)
+    @patch("business.api.score.write_events_to_starrocks", new_callable=AsyncMock, return_value=True)
+    @patch("business.api.score.get_redis_client", return_value=None)
+    @patch("business.api.score.get_es_client", return_value=None)
     @patch("httpx.AsyncClient.post")
     def test_trace_id_passed_to_scoring_service(self, mock_post, _es, _redis, _sr, client):
         """When business calls scoring service, trace_id should be propagated."""

@@ -9,7 +9,7 @@ from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from starlette.responses import JSONResponse, Response
 import httpx
 
-from business.db import get_redis_client, get_pg_pool, get_es_client
+from business.repositories.pg_repo import get_redis_client, get_pg_pool, get_es_client
 
 router = APIRouter()
 
