@@ -10,6 +10,8 @@ from pydantic import BaseModel
 
 from business.middleware.auth import verify_token
 from business.middleware.rbac import require_analyst
+from business.repositories.agent_client import AgentMonitorClient
+from business.services.agent_monitor_service import AgentMonitorService
 from common.observability import get_logger
 
 router = APIRouter()
@@ -47,26 +49,10 @@ class A2AMessage(BaseModel):
 @router.get("/agents/metrics", dependencies=[Depends(require_analyst)])
 async def get_agent_metrics():
     """获取 Agent 运行状态指标"""
+    client = AgentMonitorClient(AGENT_LAYER_URL)
+    svc = AgentMonitorService(client)
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.get(f"{AGENT_LAYER_URL}/agents")
-            resp.raise_for_status()
-            data = resp.json()
-            agents_raw = data.get("agents", [])
-            # agent-layer returns list of strings — convert to metrics format
-            agents_metrics = []
-            for item in agents_raw:
-                if isinstance(item, dict):
-                    agents_metrics.append(item)
-                elif isinstance(item, str):
-                    agents_metrics.append({
-                        "name": item,
-                        "status": "online",
-                        "execCount": 0,
-                        "avgLatency": 0.0,
-                        "errorRate": 0.0,
-                    })
-            return {"agents": agents_metrics}
+        return await svc.get_metrics()
     except Exception:
         raise HTTPException(status_code=503, detail="Agent layer unavailable")
 
@@ -74,26 +60,14 @@ async def get_agent_metrics():
 @router.get("/agents/exec-history", dependencies=[Depends(require_analyst)])
 async def get_exec_history(limit: int = Query(50, le=200)):
     """获取 Agent 执行历史"""
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.get(f"{AGENT_LAYER_URL}/agents/exec-history", params={"limit": limit})
-            if resp.status_code == 404:
-                return {"records": []}
-            resp.raise_for_status()
-            return resp.json()
-    except Exception:
-        return {"records": []}
+    client = AgentMonitorClient(AGENT_LAYER_URL)
+    svc = AgentMonitorService(client)
+    return await svc.get_exec_history(limit)
 
 
 @router.get("/agents/a2a-messages", dependencies=[Depends(require_analyst)])
 async def get_a2a_messages(limit: int = Query(20, le=100)):
     """获取 A2A 消息流"""
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.get(f"{AGENT_LAYER_URL}/agents/a2a-messages", params={"limit": limit})
-            if resp.status_code == 404:
-                return {"messages": []}
-            resp.raise_for_status()
-            return resp.json()
-    except Exception:
-        return {"messages": []}
+    client = AgentMonitorClient(AGENT_LAYER_URL)
+    svc = AgentMonitorService(client)
+    return await svc.get_a2a_messages(limit)
