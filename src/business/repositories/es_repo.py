@@ -409,3 +409,91 @@ class DashboardRepo:
                     "timestamp": src.get("timestamp", ""),
                 })
             return alerts
+
+
+# ---------------------------------------------------------------------------
+# Report 专用 ES 仓储
+# ---------------------------------------------------------------------------
+
+
+class ReportRepo:
+    """报表统计 ES 数据访问：封装四类聚合查询体，不含业务规则。"""
+
+    def __init__(self, es_base: str) -> None:
+        self._es_base = es_base
+
+    async def query_trend(self, date_range_filter: dict) -> dict:
+        """每日趋势聚合（date_histogram + DGA 命中子聚合）。返回原始 ES JSON。"""
+        wildcard = _events_index_wildcard()
+        body = {
+            "size": 0,
+            "query": date_range_filter,
+            "aggs": {
+                "per_day": {
+                    "date_histogram": {"field": "timestamp", "calendar_interval": "day"},
+                    "aggs": {"dga": {"filter": {"term": {"is_dga": True}}}},
+                }
+            },
+        }
+        url = f"{self._es_base}/{wildcard}/_search"
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.post(url, json=body, headers=ES8_HEADERS)
+            r.raise_for_status()
+            return r.json()
+
+    async def query_top_domains(self, date_range_filter: dict) -> dict:
+        """Top 10 DGA 域名聚合（terms on domain.keyword）。返回原始 ES JSON。"""
+        wildcard = _events_index_wildcard()
+        body = {
+            "size": 0,
+            "query": {"bool": {"must": [
+                date_range_filter,
+                {"term": {"is_dga": True}},
+            ]}},
+            "aggs": {"top": {"terms": {"field": "domain.keyword", "size": 10}}},
+        }
+        url = f"{self._es_base}/{wildcard}/_search"
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.post(url, json=body, headers=ES8_HEADERS)
+            r.raise_for_status()
+            return r.json()
+
+    async def query_top_hosts(self, date_range_filter: dict) -> dict:
+        """Top 10 受影响主机聚合（terms on src_ip.keyword + 唯一域名基数）。返回原始 ES JSON。"""
+        wildcard = _events_index_wildcard()
+        body = {
+            "size": 0,
+            "query": {"bool": {"must": [
+                date_range_filter,
+                {"term": {"is_dga": True}},
+            ]}},
+            "aggs": {
+                "top": {
+                    "terms": {"field": "src_ip.keyword", "size": 10},
+                    "aggs": {"unique_domains": {"cardinality": {"field": "domain.keyword"}}},
+                }
+            },
+        }
+        url = f"{self._es_base}/{wildcard}/_search"
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.post(url, json=body, headers=ES8_HEADERS)
+            r.raise_for_status()
+            return r.json()
+
+    async def query_heatmap(self, date_range_filter: dict) -> dict:
+        """热力图聚合（date_histogram by hour，用于 hour_of_day × day_of_week 矩阵）。返回原始 ES JSON。"""
+        wildcard = _events_index_wildcard()
+        body = {
+            "size": 0,
+            "query": date_range_filter,
+            "aggs": {
+                "per_hour": {
+                    "date_histogram": {"field": "timestamp", "calendar_interval": "hour"},
+                }
+            },
+        }
+        url = f"{self._es_base}/{wildcard}/_search"
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.post(url, json=body, headers=ES8_HEADERS)
+            r.raise_for_status()
+            return r.json()
