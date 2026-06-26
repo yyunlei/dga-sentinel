@@ -6,7 +6,8 @@ from __future__ import annotations
 
 import pytest
 
-from business.api.alerts import _build_filter_query, _SEVERITY_PRIORITY
+from business.repositories.es_repo import _build_filter_query
+from business.services.alert_service import _SEVERITY_PRIORITY
 
 
 # ---------------------------------------------------------------------------
