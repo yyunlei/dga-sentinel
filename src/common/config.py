@@ -12,7 +12,15 @@ from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+def _find_project_root(start: Path) -> Path:
+    """向上查找含 pyproject.toml 的目录作为项目根(容器内 /app,host 为仓库根)。"""
+    for candidate in (start, *start.parents):
+        if (candidate / "pyproject.toml").exists():
+            return candidate
+    return start.parents[1]  # 兜底:旧行为
+
+_PROJECT_ROOT = _find_project_root(Path(__file__).resolve())
+PROJECT_ROOT = _PROJECT_ROOT  # 公共别名,供其它模块统一引用
 
 
 class Settings(BaseSettings):

@@ -16,7 +16,7 @@ from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from pydantic import BaseModel
 from starlette.responses import Response
 
-from common.config import get_settings
+from common.config import get_settings, PROJECT_ROOT
 from common.schemas import ScoreRequest, ScoreResponse, ScoreResult
 from common.observability import (
     setup_logging, get_logger, SCORE_REQUESTS, SCORE_LATENCY, DGA_HITS,
@@ -44,7 +44,7 @@ DRIFT_CHECK_INTERVAL_SEC = 300  # 5 分钟
 def _load_models() -> EnsembleScorer:
     """加载模型并注册"""
     settings = get_settings()
-    project_root = Path(__file__).resolve().parent.parent
+    project_root = PROJECT_ROOT
 
     binary_path = project_root / settings.model_binary_path
     multi_path = project_root / settings.model_multi_path
