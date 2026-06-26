@@ -6,8 +6,6 @@ HTTP 层：仅处理依赖注入、参数解析、异常映射。业务逻辑见
 
 from __future__ import annotations
 
-import json
-
 import asyncpg
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel

@@ -1,5 +1,5 @@
 """
-特征提取节点 — 调用 ai.scoring 的特征提取器
+特征提取节点 — 调用 common.features 的特征提取器
 """
 
 from __future__ import annotations

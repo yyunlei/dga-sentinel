@@ -7,7 +7,6 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from business.middleware.auth import verify_token
 from business.middleware.rbac import require_analyst
 from business.repositories.agent_client import AgentMonitorClient
 from business.services.agent_monitor_service import AgentMonitorService

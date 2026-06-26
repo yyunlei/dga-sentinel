@@ -9,9 +9,7 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
-from business.middleware.auth import verify_token
 from business.middleware.rbac import require_analyst
-from common.config import get_settings
 from common.observability import get_logger
 
 router = APIRouter()
