@@ -178,7 +178,8 @@ graph TB
 | 模式 | 应用位置 | 价值 |
 |------|----------|------|
 | **Event-Driven** | Kafka → DAG Engine → Sinks | 适合实时 DNS 流处理 |
-| **Microservices** | Gateway / Scoring / DAG / Agent 独立容器 | 职责清晰，独立扩展 |
+| **Layered（分层）** | business：api（HTTP）→ services（业务编排）→ repositories（数据访问） | 关注点分离，单向依赖（测试强制） |
+| **Microservices** | Gateway / Scoring / DAG / Agent 独立容器（依赖按服务拆分） | 职责清晰，独立扩展，镜像精简 |
 | **CQRS** | ES（查询）+ StarRocks（分析）+ Kafka（写入） | 读写分离，适合告警场景 |
 | **Multi-Agent** | Triage → Explain → ThreatIntel → Response | 适合智能分析任务 |
 
@@ -191,7 +192,7 @@ graph TB
 | API 网关 | FastAPI + Uvicorn | REST API、WebSocket、中间件 |
 | 评分服务 | gRPC + Protobuf | 高性能模型推理通信 |
 | ML 模型 | XGBoost / TensorFlow / scikit-learn | 二分类 + 家族多分类 DGA 检测 |
-| 可解释性 | SHAP | 模型预测解释 |
+| 告警可解释 | DeepSeek LLM（ExplainAgent） | 自然语言告警解释与研判 |
 | DAG 编排 | LangGraph | 有向无环图 Pipeline 编排 |
 | Agent / LLM | LangChain + LangGraph / DeepSeek | A2A 多 Agent 协作、告警解释 |
 | 前端 | React 19 + TypeScript 5.7 + Vite 6 | SPA 单页应用 |
@@ -239,7 +240,7 @@ scripts/platform.sh status
 
 | 服务 | 地址 | 说明 |
 |------|------|------|
-| 前端控制台 | http://localhost:3000 | React 管理界面 |
+| 前端控制台 | http://localhost:13001 | React 管理界面 |
 | API 网关 | http://localhost:8000 | REST API |
 | API 文档 | http://localhost:8000/docs | Swagger UI |
 | Grafana | http://localhost:3001 | 监控仪表盘（admin / admin） |
@@ -262,9 +263,14 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile full up
 ### 本地开发（不使用 Docker）
 
 ```bash
-# 后端
-pip install -e ".[dev]"
+# 后端 —— 依赖按服务分组（见 pyproject 的 optional-dependencies），网关只需 base：
+pip install -e ".[dev]"                  # business/gateway：base + 开发工具（无 ML/LLM 重依赖）
 PYTHONPATH=src uvicorn business.main:app --reload --port 8000
+
+# 跑其它服务时按需安装对应组：
+#   pip install -e ".[scoring]"          # scoring：TensorFlow + XGBoost（Intel-Mac 无 TF wheel，建议用 Docker）
+#   pip install -e ".[dag]"              # dag：LangGraph
+#   pip install -e ".[agents]"           # agents：LangChain 全家桶 + RAG embedding
 
 # 前端
 cd frontend && npm install && npm run dev
@@ -401,7 +407,7 @@ dga-sentinel/
 │   ├── seed_data.py            # 数据播种（PG / ES / Redis）
 │   ├── setup_pipelines.py      # Pipeline 初始化
 │   └── simulate_traffic.py     # 流量模拟器
-├── tests/                      # 集成与端到端测试
+├── tests/                      # 单元 / 集成 / 端到端 / Playwright 测试（unit/integration/e2e/playwright）
 ├── artifacts/                  # 训练好的模型文件
 ├── docs/                       # 文档（architecture 架构图、screenshots 截图）
 ├── docker-compose.yml          # 生产编排
