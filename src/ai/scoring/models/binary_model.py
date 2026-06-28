@@ -11,6 +11,7 @@ import joblib
 import numpy as np
 
 from common.features.lexical import extract_lexical_features
+from common.features.entropy import extract_entropy_features
 from common.features.ngram import NgramFeatureExtractor
 
 
@@ -31,7 +32,8 @@ class BinaryModel:
             probability: malware 概率 [0, 1]
         """
         lexical = extract_lexical_features(domain)
-        X = self.ngram_extractor.extract_and_scale(domain, lexical)
+        entropy = extract_entropy_features(domain)
+        X = self.ngram_extractor.build(domain, lexical, entropy)
 
         label = int(self.model.predict(X)[0])
 

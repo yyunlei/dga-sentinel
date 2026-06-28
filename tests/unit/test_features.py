@@ -57,33 +57,29 @@ import numpy as np
 
 
 class TestNgramFeatures:
-    def test_matrix_stats_keys(self):
-        """_matrix_stats returns 7 statistical keys with correct prefix"""
+    def test_build_concatenates_lexical_entropy_ngram(self):
+        """build() 拼接 lexical(22) + entropy(4) + 各 ngram TF-IDF，返回稀疏 (1, N)。"""
         sparse = pytest.importorskip("scipy.sparse")
         from common.features.ngram import NgramFeatureExtractor
-        matrix = sparse.csr_matrix(np.array([[1, 2, 3, 4, 5]]))
-        result = NgramFeatureExtractor._matrix_stats(matrix, "test")
-        # Production code returns: mean, var, min, std, max, skew, kurtosis (no median)
-        expected_keys = {"test_mean", "test_std", "test_var", "test_min", "test_max", "test_skew", "test_kurtosis"}
-        assert set(result.keys()) == expected_keys
+        from common.features.lexical import extract_lexical_features, LEXICAL_COLUMNS
+        from common.features.entropy import extract_entropy_features, ENTROPY_COLUMNS
 
-    def test_extract_returns_21_features(self):
-        sparse = pytest.importorskip("scipy.sparse")
-        from common.features.ngram import NgramFeatureExtractor
-        with patch.object(NgramFeatureExtractor, "__init__", return_value=None):
-            extractor = NgramFeatureExtractor()
-            mock_vec = MagicMock()
-            mock_vec.transform.return_value = sparse.csr_matrix(np.array([[0.1, 0.2, 0.3]]))
-            # Production extract() uses self.unigrams / self.bigrams / self.trigrams
-            extractor.unigrams = mock_vec
-            extractor.bigrams = mock_vec
-            extractor.trigrams = mock_vec
-            result = extractor.extract("example.com")
-            assert len(result) == 21
-            # Keys follow UNI-*/BI-*/TRI-* naming convention
-            for prefix in ("UNI", "BI", "TRI"):
-                for stat in ("MEAN", "VAR", "PVAR", "STD", "PSTD", "SKE", "KUR"):
-                    assert f"{prefix}-{stat}" in result
+        # 两个 mock 向量化器，各输出 5 / 7 维稀疏
+        v1, v2 = MagicMock(), MagicMock()
+        v1.transform.return_value = sparse.csr_matrix(np.ones((1, 5), dtype=np.float32))
+        v2.transform.return_value = sparse.csr_matrix(np.ones((1, 7), dtype=np.float32))
+
+        ex = NgramFeatureExtractor.__new__(NgramFeatureExtractor)
+        ex.vectorizers = [v1, v2]
+        lex = extract_lexical_features("evil.example.com")
+        ent = extract_entropy_features("evil.example.com")
+        X = ex.build("evil.example.com", lex, ent)
+
+        assert sparse.issparse(X)
+        # 维度 = 22 词法 + 4 熵 + 5 + 7 = 38
+        assert X.shape == (1, len(LEXICAL_COLUMNS) + len(ENTROPY_COLUMNS) + 5 + 7)
+        # 前 22 列是词法值（按 LEXICAL_COLUMNS 顺序）
+        assert X.toarray()[0, 0] == lex["N"]
 
 
 import asyncio

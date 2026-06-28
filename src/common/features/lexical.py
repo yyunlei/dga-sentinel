@@ -12,6 +12,14 @@ from collections import Counter
 import numpy as np
 import pandas as pd
 
+# 22 个词法特征列（顺序固定，训练与推理共享）
+LEXICAL_COLUMNS = [
+    "N", "LCc", "LCv", "LCn",
+    "L_tld", "Rc_tld", "Rv_tld", "Rn_tld", "Rl_tld", "Rs_tld",
+    "L_sld", "Rc_sld", "Rv_sld", "Rn_sld", "Rl_sld", "Rs_sld",
+    "L_sub", "Rc_sub", "Rv_sub", "Rn_sub", "Rl_sub", "Rs_sub",
+]
+
 
 def count_char_features(domain: str) -> tuple[int, float, float, float, float, float]:
     """计算域名字符级特征"""

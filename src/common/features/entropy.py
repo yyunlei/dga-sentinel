@@ -7,6 +7,9 @@ from __future__ import annotations
 import math
 from collections import Counter
 
+# 4 个熵特征列（顺序固定，训练与推理共享）
+ENTROPY_COLUMNS = ["entropy_full", "entropy_sld", "char_class_entropy", "unique_char_ratio"]
+
 
 def shannon_entropy(domain: str) -> float:
     """计算域名的 Shannon 信息熵"""
